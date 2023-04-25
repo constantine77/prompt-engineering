@@ -143,7 +143,7 @@ Next, wrap the existing code in a new function called lambda_handler:
 def lambda_handler(event, context):
     # The existing code goes here
 
-<pre>
+</pre>
 
 At the end of the app.py file, outside the lambda_handler function, remove the following line:
 
@@ -173,7 +173,7 @@ from app import app as application
 if __name__ == '__main__':
     application.run()
 
-<pre>
+</pre>
 
 
 4. Update zappa_settings.json:
