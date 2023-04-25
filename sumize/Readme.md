@@ -100,7 +100,7 @@ In the AWS Management Console, navigate to the Lambda service and find the funct
 
 <pre>
 OPENAI_API_KEY: your_openai_api_key
-<pre>
+</pre>
 
 Replace your_openai_api_key with your actual OpenAI API key.
 
