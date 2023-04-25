@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Meal Plan Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            background-color: #f7f7f7;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        label {
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: #444;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            margin-bottom: 1.5rem;
+        }
+
+        input[type="submit"] {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            background-color: #4caf50;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        p {
+            font-size: 1rem;
+            color: #444;
+            margin-bottom: 0.5rem;
+        }
+
+        strong {
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>YUPST - Meal Plan Generator</h1>
+    <form action="/mealplan" method="post">
+        <label for="ingredients">Ingredients:</label><br>
+        <input type="text" id="ingredients" name="ingredients"><br>
+        <label for="kcal">Calories:</label><br>
+        <input type="number" id="kcal" name="kcal" value="2000"><br><br>
+        <input type="submit" value="Generate Meal Plan">
+    </form>
+    <p><strong>Note:</strong> Separate multiple ingredients with commas.</p>
+    <p><strong>Example:</strong> broccoli, chicken, fish, vegetables, cabbage, eggs, olive oil</p>
+</body>
+
+</html>

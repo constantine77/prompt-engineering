@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Meal Plan Generator</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Meal Plan Generator</h2>
+        <form action="/mealplan" method="post">
+            <div class="form-group">
+                <label for="ingredients">Ingredients:</label>
+                <input type="text" class="form-control" id="ingredients"
+                    placeholder="Enter ingredients separated by commas" name="ingredients" required>
+            </div>
+            <div class="form-group">
+                <label for="kcal">Maximum kcal:</label>
+                <input type="number" class="form-control" id="kcal" placeholder="Enter maximum kcal" name="kcal"
+                    required>
+            </div>
+            <button type="submit" class="btn btn-default">Generate Meal Plan</button>
+        </form>
+
+        {% if output %}
+        <h3>Meal Plan:</h3>
+        <p>{{ output }}</p>
+        {% endif %}
+
+        {% if image_filenames %}
+        <h3>Meal Plan Images:</h3>
+        <div class="row">
+            {% for image_filename in image_filenames %}
+            <div class="col-md-4">
+                <div class="thumbnail">
+                    <img src="{{ url_for('static', filename=image_filename) }}" alt="{{ image_filename }}">
+                    <div class="caption">
+                        <h4>{{ titles[loop.index0] }}</h4>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+</body>
+
+</html>
