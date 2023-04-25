@@ -2,4 +2,4 @@
 
 
 
-![YUPST main page](images/sumize_main.png)
+![YUPST main page](images/yupst_main.png)
