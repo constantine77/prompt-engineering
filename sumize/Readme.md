@@ -216,12 +216,7 @@ Now you have a Lambda function that processes your Flask app. When you send requ
 
 In your index.html, update the form action to point to the API Gateway URL:
 
-<pre>
-
 <form action="https://your-api-gateway-url/production/summarize" method="post">
-
-</pre>
-
 
 Replace https://your-api-gateway-url with the URL provided by Zappa after deployment.
 
