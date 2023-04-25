@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sumize.ai</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand mx-auto" href="/" style="font-size: 5rem; font-weight: bold;">SUMIZE</a>
+
+            </div>
+        </nav>
+    </header>
+    <main>
+        <section class="intro">
+            <div class="container text-center">
+                <h1>Summarize Videos & Articles</h1>
+                <p>Enter the link of the video or article you want to summarize:</p>
+                <form id="summarize-form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="link" name="link"
+                            placeholder="https://www.youtube.com/watch?v=xyz">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-submit">Summarize</button>
+                </form>
+            </div>
+        </section>
+        <section class="subscribe">
+            <div class="container text-center">
+                <h2>Subscribe for updates</h2>
+                <form>
+                    <div class="form-group">
+                        <input type="text" class="form-control subscribe-input" placeholder="Your email address">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-submit">Subscribe</button>
+                </form>
+            </div>
+        </section>
+        <section class="summary">
+            <div class="container">
+                <div id="summary" class="mt-4"></div>
+            </div>
+        </section>
+    </main>
+    <script>
+        $("#summarize-form").submit(function (e) {
+            e.preventDefault();
+
+            $.ajax({
+                url: '/summarize',
+                method: 'POST',
+                data: $(this).serialize(),
+                beforeSend: function () {
+                    $(".btn-submit").attr("disabled", true).text("Summarizing...");
+                },
+                success: function (response) {
+                    $("#summary").html(response.summary.replace(/\n/g, '<br>'));
+                },
+                complete: function () {
+                    $(".btn-submit").attr("disabled", false).text("Summarize");
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,40 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.6;
+}
+
+header {
+    margin-bottom: 3rem;
+}
+
+.intro {
+    margin-bottom: 3rem;
+}
+
+.intro h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.subscribe {
+    background-color: #f1f1f1;
+    padding: 3rem 0;
+}
+
+.subscribe h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.subscribe-input {
+    margin-bottom: 1rem;
+}
+
+.btn-submit {
+    width: 50%;
+}
+
+.navbar-brand {
+    font-size: 15rem;
+    font-weight: bold;
+}
