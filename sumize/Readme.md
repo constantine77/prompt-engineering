@@ -21,11 +21,11 @@ To run the solution on AWS using Lambda for execution and S3 for hosting the web
 
 First, create a **requirements.txt** file in your project directory with the necessary dependencies:
 <pre>
-```
+
 Flask==2.1.1
 pytube==12.1.1
 openai==0.35.0
-```
+
 </pre>
 
 
@@ -34,7 +34,7 @@ Next, create a zappa_settings.json file in your project directory with the follo
 
 
 <pre>
-```
+
 {
     "production": {
         "app_function": "app.app",
@@ -45,7 +45,7 @@ Next, create a zappa_settings.json file in your project directory with the follo
         "s3_bucket": "your-s3-bucket-name"
     }
 }
-```
+
 </pre>
 
 Replace **your-s3-bucket-name** with a unique S3 bucket name for your application.
@@ -53,20 +53,20 @@ Replace **your-s3-bucket-name** with a unique S3 bucket name for your applicatio
 2. Create a virtual environment and install dependencies:
 
 <pre>
-```
+
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 pip install zappa
-```
+
 </pre>
 
 3. Initialize Zappa:
 
 <pre>
-```
+
 zappa init
-```
+
 </pre>
 
 Follow the prompts and use the default settings.
@@ -75,9 +75,9 @@ Follow the prompts and use the default settings.
 
 Copy code:
 <pre>
-```
+
 zappa deploy production
-```
+
 </pre>
 
 Once the deployment is complete, you'll receive a URL for your deployed application. Save this URL for later use.
@@ -94,14 +94,12 @@ In the S3 bucket settings, navigate to the "Properties" tab and enable "Static w
 
 Upload the index.html and styles.css files to the S3 bucket. Ensure that the files have public read permissions.
 
-7. Update the Lambda function's environment variables:
+8. Update the Lambda function's environment variables:
 
 In the AWS Management Console, navigate to the Lambda service and find the function that was created by Zappa. Edit the environment variables to include your OpenAI API key:
 
 <pre>
-```
 OPENAI_API_KEY: your_openai_api_key
-```
 <pre>
 
 Replace your_openai_api_key with your actual OpenAI API key.
@@ -111,19 +109,21 @@ Replace your_openai_api_key with your actual OpenAI API key.
 Open the static website URL from your S3 bucket in a web browser. The URL should look like this:
 
 <pre>
-```
+
 http://your-s3-bucket-name.s3-website-us-east-1.amazonaws.com
-```
+
 </pre>
+
+**Create a Lambda function:**
 
 To create a Lambda function for your application, you'll need to make a few adjustments to your existing Flask application. First, modify your existing app.py to make it compatible with AWS Lambda and API Gateway.
 
 1. Install AWS SDK for Python (Boto3):
 
 <pre>
-```
+
 pip install boto3
-```
+
 </pre>
 
 2. Update app.py:
@@ -131,35 +131,35 @@ pip install boto3
 Add the following imports at the beginning of the app.py file:
 
 <pre>
-```
+
 import json
 from botocore.vendored import requests
-```
+
 </pre>
 
 Next, wrap the existing code in a new function called lambda_handler:
 <pre>
-```
+
 def lambda_handler(event, context):
     # The existing code goes here
-```
+
 <pre>
 
 At the end of the app.py file, outside the lambda_handler function, remove the following line:
 
 <pre>
-```
+
 app.run(debug=True)
-```
+
 </pre>
 
 Replace it with the following lines:
 
 <pre>
-```
+
 if __name__ == '__main__':
     app.run(debug=True)
-```
+
 </pre>
 
 3. Create a new file wsgi.py:
@@ -167,12 +167,12 @@ if __name__ == '__main__':
 Create a new file named wsgi.py in your project folder with the following content:
 
 <pre>
-```
+
 from app import app as application
 
 if __name__ == '__main__':
     application.run()
-```
+
 <pre>
 
 
@@ -180,9 +180,9 @@ if __name__ == '__main__':
 
 Update the app_function value in the zappa_settings.json file:
 <pre>
-```
+
 "app_function": "wsgi.application",
-```
+
 </pre>
 
 5. Update the requirements file:
@@ -190,13 +190,13 @@ Update the app_function value in the zappa_settings.json file:
 Add boto3 and gunicorn to your requirements.txt:
 
 <pre>
-```
+
 Flask==2.1.1
 pytube==12.1.1
 openai==0.35.0
 boto3==1.20.20
 gunicorn==20.1.0
-```
+
 </pre>
 
 
@@ -205,9 +205,9 @@ gunicorn==20.1.0
 Run the following command to deploy your application:
 
 <pre>
-```
+
 zappa deploy production
-```
+
 </pre>
 
 Once the deployment is complete, you'll receive a URL for your deployed application. This URL is the API Gateway endpoint for your Lambda function.
@@ -217,9 +217,9 @@ Now you have a Lambda function that processes your Flask app. When you send requ
 In your index.html, update the form action to point to the API Gateway URL:
 
 <pre>
-```
+
 <form action="https://your-api-gateway-url/production/summarize" method="post">
-```
+
 </pre>
 
 
