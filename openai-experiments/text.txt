@@ -1,0 +1,280 @@
+
+Slide 1 and 2
+
+Hello everyone,
+
+I'm really happy you're here today. We're going to talk about something cool and cutting-edge - using artificial intelligence, or AI. 
+
+Some people might think AI is hard to understand or use unless, it's kinda new Buz Word for today. But guess what? That's not true anymore. With the OpenAI API, anyone can create an app that uses AI. You don't need to be MLE  or math expert.
+
+Today, I'm going to show you just how easy it is. We'll use the OpenAI API to build an AI-powered app in no time at all.
+
+By the end of our time together, you'll see that AI isn't something scary or confusing. It's a tool that you can use to make your ideas real and to make things that are helpful for everyone.
+
+So let's get started. 
+
+
+Slide 3
+
+What is OpenAI:
+
+Alright, before we jump into the demo, let's talk about what OpenAI is.
+
+OpenAI is an artificial intelligence organization that's all about making sure that artificial general intelligence, or AGI, benefits all of humanity. So, what does this mean? Well, it means OpenAI is dedicated to building smart machines that not only perform tasks, but also understand, learn, and adapt to different situations, just like humans do.
+
+The great thing about OpenAI is that it’s not just for the tech experts or big corporations. It’s designed to be accessible to everyone. It's an open-source platform, meaning that anyone can use it, and it's been designed in a way that you don't need to be an AI specialist to get started.
+
+With the OpenAI API, which we will be exploring today, you can tap into powerful pre-trained models to build your own applications. These applications can range from drafting emails, writing code, answering questions, tutoring in various subjects, translating languages, simulating characters for video games, and much more.
+
+So, OpenAI is a powerful tool that is designed to be in the hands of people like you and me. Today, we'll see just how simple it is to use this tool and create something amazing. Now, let's move forward and see OpenAI in action
+
+
+
+
+Slide 4
+
+
+I want to tell you about the AI models that are available so that you
+can choose the right one.
+In this demo we'll go over openai models.
+I've used the word model many, many times.
+But what is an AI model?
+Generally, an AI model is a software program that uses specific algorithms and has been trained on
+a set of data to perform specific tasks like completing text, generating images or recognizing certain
+patterns.
+
+AI models use machine learning and deep learning algorithms to learn from the training and apply that
+learning to achieve specific predefined objectives.
+
+The OpenAI API has access to a family of models, each with different capabilities.
+Note that you can also customize the models offered by OpenAI for specific use cases.
+And this is called model fine tuning.
+OpenAI provides us with access to the following model families.
+
+GPT-4 is a large multimodal model (accepting text inputs and emitting text outputs today, with image inputs coming in the future) that can solve difficult problems with greater accuracy than any of our previous models,
+
+I want to tell you about the AI models that are available so that you
+can choose the right one.
+In this demo we'll go over openai models.
+I've used the word model many, many times.
+But what is an AI model?
+Generally, an AI model is a software program that uses specific algorithms and has been trained on
+a set of data to perform specific tasks like completing text, generating images or recognizing certain
+patterns.
+ 
+AI models use machine learning and deep learning algorithms to learn from the training and apply that
+learning to achieve specific predefined objectives.
+
+Artificial Intelligence (AI), Machine Learning (ML), and Deep Learning (DL) are interrelated concepts, with each representing a subset of the previous one.
+	Artificial Intelligence (AI): This is a broad term referring to machines or software exhibiting intelligence similarly to how humans would. AI can be rule-based and not necessarily require learning from data. It includes anything from simple rule-based systems to complex systems that can understand, learn, predict, and adapt.
+	Machine Learning (ML): This is a subset of AI that focuses on the development of algorithms and statistical models that computers use to perform tasks without explicit instruction. Rather, they rely on patterns and inference instead. So, instead of writing code, you feed data to the 'machine' and it 'learns' and makes decisions based on that data.
+	Deep Learning (DL): This is a subset of ML that uses artificial neural networks with multiple layers (hence 'deep') to model and understand complex patterns and representations. These neural networks attempt to simulate the behavior of the human brain—albeit far from matching its ability—to 'learn' from large amounts of data. While a neural network with a single layer can still make approximate predictions, additional hidden layers can help optimize the accuracy.
+In summary, all of ML and DL is AI, but not all AI involves ML or DL. And, DL is a specific kind of ML.
+
+
+An AI model is a mathematical structure that learns patterns from data. It's like a formula or algorithm that's been trained to predict outcomes based on input. For instance, an AI model might be trained on a lot of photos of cats and dogs, learning to recognize the features of each so it can categorize a new image as either a cat or a dog. The training involves adjusting the parameters of the model to minimize the difference between its predictions and the actual outcomes. AI models are used in a wide range of applications, from voice recognition and natural language understanding to image recognition and autonomous vehicles.
+
+
+Slide 5
+
+The OpenAI API is powered by a diverse set of models with different capabilities and price points. You can also make limited customizations to original base models for your specific use case with fine-tuning.
+
+The OpenAI API has access to a family of models, each with different capabilities.
+Note that you can also customize the models offered by OpenAI for specific use cases.
+And this is called model fine tuning.
+OpenAI provides us with access to the following model families.
+
+
+Slide 7
+
+Hi, guys, and welcome back.
+Up until now, we've used the OpenAI API successfully to get data from AI models like Da Vinci or Chatgpt.
+In this video, we'll go deeper into Chatgpt and see how it really works.
+The models that power GPT focus on the following areas.
+Large language models.
+Self-attention Mechanism and reinforcement learning from human feedback.
+And this is what makes Chatgpt unique.
+By the way, GPT means generative pre-trained transformer.
+The transformer is a deep learning model that adopts the mechanism of Self-attention to differentiate
+the significance of each part of the input data using weights.
+Large language models, digest huge quantities of text data and infer relationships between words within
+the text.
+Large language models or LMS increase their capability as the size of their input data sets and parameter
+space increase.
+However, there are some issues and limitations with LMS.
+The issues are capability and alignment.
+In this context, capability refers to a model's ability to perform a specific task or how well it is
+able to optimize its objective function.
+Alignment, on the other hand, is concerned with what we actually want the model to do versus what
+it has been trained to do.
+Simply put, it shows to what extent the model's goals and behavior align with human values and expectations.
+Elms such as the GPT three family of models are misaligned because they are trained on vast amounts
+of text, data, articles, books and so on from the internet and are capable of generating human like
+text.
+But they may not always produce output that is consistent within the human expectations or desired values.
+This misalignment is due to their objective function, which is a probability distribution over word
+sequences that allows them to predict what the next word is in the sequence.
+The alignment problem.
+In a large language, models typically manifests as model hallucinations when the model is making up
+an existing or wrong facts.
+Lack of interpretability.
+When the humans don't understand how the model arrived at a particular decision or prediction and generating
+biased or toxic output.
+If the language model was trained on biased or toxic data, it may reproduce biased or toxic data in
+its output, no matter how it is instructed.
+Let's go ahead and see why a model can produce misalignment.
+GPT three family of models and this includes GPT 3.5 Turbo used by Chatgpt are generative models.
+The core techniques used for training are next token prediction and masked language modeling.
+Next token prediction means that the model is given a sequence of words as input, and it is asked to
+predict in a reasonable human like way the next word in the sequence.
+And the masked language modeling approach is a variant of the next token prediction in which some of
+the words in the input sentence are replaced with a special token such as mask.
+The model is then asked to predict the correct word that should be inserted in the place of the mask.
+For example, if the model is given the sentence, the area.
+Of a circle.
+Is mask in square brackets.
+Times the radius squared.
+The model is filling in blank with the most statistically probable word given the surrounding context.
+And that's the pie constant.
+But if I'm asking the Roman Empire.
+Mask in square brackets with the rain.
+Of Augustus.
+The model may predict that the mask position should be filled with began or ended because the occurrence
+probability of both works is high.
+And it replaced the mask with Begin.
+To overcome this possible misalignment in large language models.
+OpenAI uses a specific technique called reinforcement learning from human feedback.
+Chatgpt is the first case of the use of this technique for a model put into production.
+But what does reinforcement learning from human feedback mean?
+Let's ask Chatgpt.
+As you can see, reinforcement learning from human feedback is a training technique used by deep learning
+models.
+They interact with an environment and receive feedback in the form of rewards or penalties based on
+their actions.
+The model also receives feedback from a human expert who provides guidance on how to improve its performance.
+Human feedback can take various forms, such as correcting misclassifications, providing additional
+training data or suggesting changes to the model architecture.
+This technique was described in depth in an Openai's 2022 paper that you'll find a text to this video.
+All right, well done.
+Now you have a good overview of how Chatgpt works.
+Next, we'll go over some other important concepts used by large language models such as the GPT family.
+We'll talk about tokens, model completion parameters in depth, the system role and prompt engineering.
+This will really put you on top.
+
+
+Slide 6-10
+
+
+OpenAI released of ChatGPT’s API, allowing developers easy access to building applications with the model. This demo will discuss important concepts on using the new ChatGPT API to build applications and how you can quickly get started.
+How ChatGPT Works:
+The Models that power ChatGPT focus on the following ares:
+	• Large Language Models (LLM)
+	• Self-Attention Mechanism
+	• Reinforcement Learning from Human Feedback (RLHF).
+GPT - Generative Pre-trained Transformer
+A transformer is a deep learning model that adopts the mechanism of slef-attention, to differentiate the significance of each part of the input data using weigths.
+GPT - 3 family of models are generative models
+Core techniques: -Next-toekn Prediction -Masked-language modeling
+Reinforcement learning from human feedback
+is a type of machine learning where an agent learns to perform a task by receiving feedback from a human. In this approach, the human provides feedback to the agent in the form of rewards or punishments, depending on the agent's actions. The agent's objective is to maximize the total reward it receives over time.
+The process typically involves the following steps:
+The agent performs an action in the environment. The human provides feedback to the agent based on the outcome of the action. The agent updates its policy or strategy based on the feedback. The agent repeats this process over multiple iterations until it learns an optimal policy. This approach is particularly useful in scenarios where it is difficult or impossible to define a reward function mathematically. For example, in some complex tasks such as image captioning or natural language generation, it can be challenging to come up with a reward function that captures all the nuances of the task. In such cases, feedback from a human can provide a more intuitive and nuanced signal for the agent to learn from.
+GPT-4 is a large multimodal model that accepts as input, both text and images and generates text as output.
+It can work on documents with text and photos, diagrams, or screenshots
+Some potential limitations of GPT-4 could include:
+Data Bias: Like any machine learning model, GPT-4 could be susceptible to bias in the data it is trained on. This could result in the model producing biased or unfair outputs.
+Computational Requirements: The computational requirements for training GPT models increase with the size of the model, which could make it difficult or expensive for some organizations to train or utilize.
+Ethical Concerns: As GPT models become more advanced and capable of generating realistic human-like language, there is a potential for misuse, such as the generation of fake news or propaganda.
+Lack of Contextual Understanding: While GPT models have demonstrated impressive language generation capabilities, they still lack a deeper understanding of the context and meaning of the language they generate. This can sometimes result in outputs that are nonsensical or inappropriate.
+
+Slide 13:
+Now, let's turn our attention to a specific part of AI: embeddings.
+In the world of AI, embeddings are like a secret code. Imagine having a big, complicated book, and you need a way to summarize each chapter in just a few words - that's what embeddings do. They help us take big, complex pieces of information and squash them down into a smaller, more manageable format.
+The beauty of embeddings is that while they simplify information, they also keep the important parts. So, even though the information is smaller, it still tells us a lot about the original.
+This is really useful when you're working with AI. Often, you need to deal with massive amounts of data, like all the words in a language or all the products in a store. Embeddings make this much easier by turning that big data into something an AI model can handle.
+And today, we're going to do just that. We're going to use the OpenAI API to create embeddings and use them in our AI application.
+You'll see that no matter how complex your data, with embeddings and OpenAI, you can make it simple and easy to work with. Let's dive in and see how this works!"
+
+Slide 15
+
+Tokens are pisces of words. Before the API processes the promt, the input is broken into tokens
+Token can be words or just chunks of characters.
+1 token is approximately 4 characters or 0.75 words for Englishe text
+### Tokens:
+https://platform.openai.com/tokenizer
+In ChatGPT and other language models, a token refers to a unit of text that the model uses to generate language output. Specifically, a token is a sequence of characters or subwords that the model recognizes as a single unit for processing.
+For example, the word "chatbot" may be broken down into several tokens, such as "chat" and "bot". The model processes each token individually and uses them to generate the final output.
+
+Up until now, you've already heard me saying the word token many times.
+Tokens are of special interest to us because we pay per token, and the entire interaction with a specific
+model is limited to a maximum number of tokens.
+The maximum token limit for GPT 3.5 Turbo is 4096.
+So what are tokens?
+Tokens can be thought of as pieces of words before the API processes.
+The prompt.
+The input is broken down into tokens.
+Tokens can be words or just chunks of characters.
+
+
+OpenAI API costs:
+
+
+DEMO
+
+Chat GPT Roles:
+
+
+I think below examples will help to understand Chat GPT roles quickly:
+		Role "user" : It means you or who is chatting or who is asking to chat gpt.
+Example: (API Request)
+{ "model": "gpt-3.5-turbo", "messages": [ { "role": "user", "content": "tell me a joke" } ] }
+		Role "assistant" : It means open AI(chat gpt) server - who is replying your("user" role) questions.
+Example: (API Response)
+{ "id": "chatcmpl-87n798n6bv4678", "object": "chat.completion", "created": 1683212418, "model": "gpt-3.5-turbo-0301", "usage": { "prompt_tokens": 12, "completion_tokens": 18, "total_tokens": 30 }, "choices": [ { "message": { "role": "assistant", "content": "why did the chicken cross the road" }, "finish_reason": "stop", "index": 0 } ] }
+If need to continuous chat conversation with previous context- text from both role (user + assistant) need to send to the API.
+Example: (API Request)
+{ "model": "gpt-3.5-turbo", "messages": [ { "role": "user", "content": "tell me a joke" }, { "role": "assistant", "content": "why did the chicken cross the road" }, { "role": "user", "content": "I don't know, why did the chicken cross the road" } ] }
+		Role "system" : It means the system developer who can internally give some instructions for the conversation. developer can provide option for user input also which depends on the system requirements.
+Example: (API Request)
+{ "model": "gpt-3.5-turbo", "messages": [ { "role": "user", "content": "tell me a joke" }, { "role": "system", "content": "You are an assistant that speaks like Shakespeare." } ] }
+Suppose you are developing a system to generate SQL query and you internally can tell to chat gpt to generate sql based on users given instructions.
+System role will handle the behavior of the assistance
+
+API completion parameters
+
+The parameters you mentioned are used when making requests to the OpenAI GPT-3 API for text generation (also called 'completions'). Here's what each of them means:
+1. Temperature: This parameter helps control the randomness of the model's responses. A higher value like 0.8 makes the output more diverse and random, while a lower value like 0.2 makes the output more deterministic and focused. For example, with a lower temperature, if you were to ask the model to complete the sentence "The capital of France is...", it's more likely to respond with "Paris."
+2. Top_p: Also known as "nucleus sampling," this parameter is another way to control the randomness of the model's output. When top_p=1, all tokens can be considered for the next word. When top_p is less than 1 (like 0.2), only the most probable tokens are considered for the next word in the output. This reduces the randomness and makes the model more focused on likely completions.
+3. Max_tokens: This parameter sets the maximum length of the model's output. If you set max_tokens to 50, for example, the model's response will be cut off after 50 tokens, regardless of whether it has finished the thought or sentence.
+4. n: The "n" parameter specifies how many separate completions you want from the model. For example, if n=1, the model will return one completion. If n=3, the model will return three separate completions.
+5. stop: The "stop" parameter specifies a sequence where the model should stop generating further tokens. It could be a set of strings, and when the model generates any of these strings, it will stop the text generation. For instance, if stop is set to ["\n"], the model will stop generating more text as soon as it generates a newline.
+Remember that these parameters allow you to have some control over the output of the model. By tweaking these, you can make the model's responses more suited to your specific use case.
+
+
+Instead of sending a single string as a prompt as we usually do using chatGPT
+Here. For API we have to send a list of messages as your input.
+The next step is to create the structure of the messages.
+This is a list of dictionary objects.
+List and dictionaries.
+This will be the structure of the messages.
+Each object or message in the list has two properties.
+Role and content.
+The role can take one of three values.
+System, user or assistant.
+So the roles can be system, user and assistant.
+In the content contains the text of the message of the role.
+Conversations can be as short as one message or fill many pages.
+Typically the conversation is formatted with a system message first followed by a user message.
+The system message helps set the behavior of the assistant.
+We can instruct the bot to play a specific role.
+You'll see it in a moment.
+And the user message is what you ask the assistant.
+They can be generated by the end users of an application or set by a developer as an instruction.
+
+The openai.ChatCompletion.create is a function in the OpenAI API's Python library used to interact with OpenAI's models in a chat-based format.
+This function lets you have a back-and-forth conversation with the model by providing a series of messages, instead of just providing a single prompt and getting a single response, which is how you would use the Completion API.
+When you call openai.ChatCompletion.create, you pass in a series of messages. Each message has a role that can be 'system', 'user', or 'assistant', and 'content' which is the text of the message from the role.
+A typical conversation starts with a 'system' message, followed by alternating 'user' and 'assistant' messages. The 'system' message sets the behavior of the assistant, while the 'user' messages instruct the assistant, and the 'assistant' messages store prior responses from the assistant.
+The function returns a response from the model based on the conversation so far, which can be accessed with response['choices'][0]['message']['content'] in Python
+
+
