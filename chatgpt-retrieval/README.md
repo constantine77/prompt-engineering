@@ -14,6 +14,5 @@ Place your own data into `data.txt`.
 
 ## Example usage
 ```
-> python chatgpt.py "what is my dog's name"
-Your dog's name is Sunny.
+> python chatgpt.py "what is valuebale advice authore shares for young people"
 ```
