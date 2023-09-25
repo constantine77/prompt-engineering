@@ -1,0 +1,71 @@
+To mock the data for 3 years for 10 Spark jobs running on a daily basis, you can create a Python script that generates random values around the template you provided. Below is a Python script that does this, saving the mock data to a CSV file:
+
+```python
+import csv
+import random
+from datetime import datetime, timedelta
+
+# Define the number of days, jobs and the filename
+days = 3 * 365  # 3 years
+jobs = 10  # 10 spark jobs
+filename = "mock_spark_data.csv"
+
+# Open the file in write mode
+with open(filename, mode='w', newline='') as file:
+    writer = csv.writer(file)
+    
+    # Write the header to the CSV file
+    writer.writerow(['date', 'jobId', 'numStages', 'numTasks', 'elapsedTime', 'stageDuration', 'executorRunTime',
+                     'executorCpuTime', 'executorDeserializeTime', 'executorDeserializeCpuTime', 'resultSerializationTime',
+                     'jvmGCTime', 'shuffleFetchWaitTime', 'shuffleWriteTime', 'resultSize', 'diskBytesSpilled',
+                     'memoryBytesSpilled', 'peakExecutionMemory', 'recordsRead', 'bytesRead', 'recordsWritten',
+                     'bytesWritten', 'shuffleRecordsRead', 'shuffleTotalBlocksFetched', 'shuffleLocalBlocksFetched',
+                     'shuffleRemoteBlocksFetched', 'shuffleTotalBytesRead', 'shuffleLocalBytesRead', 'shuffleRemoteBytesRead',
+                     'shuffleRemoteBytesReadToDisk', 'shuffleBytesWritten', 'shuffleRecordsWritten'])
+    
+    # Start date
+    start_date = datetime.now() - timedelta(days=days)
+    
+    # Generate mock data for each day and each job
+    for day in range(days):
+        date = start_date + timedelta(days=day)
+        for job in range(jobs):
+            jobId = f"job_{job}"
+            
+            writer.writerow([date, jobId, 
+                             random.randint(1, 10),  # numStages
+                             random.randint(10, 100),  # numTasks
+                             random.randint(500, 2000),  # elapsedTime
+                             random.randint(500, 1500),  # stageDuration
+                             random.randint(2000, 5000),  # executorRunTime
+                             random.randint(1000, 3000),  # executorCpuTime
+                             random.randint(2000, 4000),  # executorDeserializeTime
+                             random.randint(800, 2000),  # executorDeserializeCpuTime
+                             random.randint(1, 10),  # resultSerializationTime
+                             random.randint(50, 150),  # jvmGCTime
+                             random.randint(0, 20),  # shuffleFetchWaitTime
+                             random.randint(10, 30),  # shuffleWriteTime
+                             random.randint(10000, 20000),  # resultSize
+                             0,  # diskBytesSpilled
+                             0,  # memoryBytesSpilled
+                             0,  # peakExecutionMemory
+                             random.randint(1000, 3000),  # recordsRead
+                             0,  # bytesRead
+                             0,  # recordsWritten
+                             0,  # bytesWritten
+                             random.randint(5, 15),  # shuffleRecordsRead
+                             random.randint(5, 15),  # shuffleTotalBlocksFetched
+                             random.randint(5, 15),  # shuffleLocalBlocksFetched
+                             0,  # shuffleRemoteBlocksFetched
+                             random.randint(400, 500),  # shuffleTotalBytesRead
+                             random.randint(400, 500),  # shuffleLocalBytesRead
+                             0,  # shuffleRemoteBytesRead
+                             0,  # shuffleRemoteBytesReadToDisk
+                             random.randint(400, 500),  # shuffleBytesWritten
+                             random.randint(5, 15)  # shuffleRecordsWritten
+                             ])
+                             
+print(f"Mock data generated and saved to {filename}")
+```
+
+This code will generate a CSV file with mocked data for each Spark job every day over the course of 3 years, generating variability in the metrics to simulate different job characteristics and performances. The generated CSV can then be used as a sample dataset for your experiments.
