@@ -1,33 +1,5 @@
-import pandas as pd
-from scipy.stats import zscore
+# Define columns to drop
+cols_to_drop = ['diskBytesSpilled', 'memoryBytesSpilled', 'peakExecutionMemory', 'bytesRead', 'recordsWritten', 'bytesWritten', 'shuffleRemoteBlocksFetched', 'shuffleRemoteBytesRead', 'shuffleRemoteBytesReadToDisk']
 
-# Assuming df is your DataFrame
-
-# 2. Time-based Features
-df['hour'] = df['date'].dt.hour  # Hour of the day
-df['day_of_week'] = df['date'].dt.dayofweek  # Day of the week
-df['day_of_month'] = df['date'].dt.day  # Day of the month
-df['is_weekend'] = df['day_of_week'].apply(lambda x: 1 if x >= 5 else 0)  # 1 if the day is weekend, 0 otherwise
-
-# 3. Domain-specific Features
-df['ratio_jvmGCTime_executorRunTime'] = df['jvmGCTime'] / df['executorRunTime']  # Ratio of jvmGCTime to executorRunTime
-df['ratio_jvmGCTime_elapsedTime'] = df['jvmGCTime'] / df['elapsedTime']  # Ratio of jvmGCTime to elapsedTime
-
-# Handling infinite values after division
-df.replace([np.inf, -np.inf], np.nan, inplace=True)  
-df.dropna(inplace=True)  # Drop NaN rows resulting from division by zero in ratio calculation
-
-# 1. Statistical Features
-# Rolling Mean & Standard Deviation
-window_size = 7  # A one-week window. You can change this value based on your analysis
-df['rolling_mean_jvmGCTime'] = df['jvmGCTime'].rolling(window=window_size).mean()
-df['rolling_std_jvmGCTime'] = df['jvmGCTime'].rolling(window=window_size).std()
-
-# Z-Score
-df['zscore_jvmGCTime'] = zscore(df['jvmGCTime'])
-
-# Drop the rows with NaN values introduced by rolling features
-df = df.dropna()
-
-# Preview the modified DataFrame
-df.head()
+# Drop the columns from the dataframe
+df = df.drop(columns=cols_to_drop)
