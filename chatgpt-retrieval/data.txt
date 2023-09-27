@@ -1,76 +1,33 @@
-import csv
-import random
-from datetime import datetime, timedelta
+import pandas as pd
+from scipy.stats import zscore
 
-# Define the number of days, jobs and the filename
-days = 3 * 365  # 3 years
-jobs = 3  # 3 spark jobs
-filename = "mock_spark_data_with_abnormalities.csv"
+# Assuming df is your DataFrame
 
-# Open the file in write mode
-with open(filename, mode='w', newline='') as file:
-    writer = csv.writer(file)
-    
-    # Write the header to the CSV file
-    writer.writerow(['date', 'jobId', 'numStages', 'numTasks', 'elapsedTime', 'stageDuration', 'executorRunTime',
-                     'executorCpuTime', 'executorDeserializeTime', 'executorDeserializeCpuTime', 'resultSerializationTime',
-                     'jvmGCTime', 'shuffleFetchWaitTime', 'shuffleWriteTime', 'resultSize', 'diskBytesSpilled',
-                     'memoryBytesSpilled', 'peakExecutionMemory', 'recordsRead', 'bytesRead', 'recordsWritten',
-                     'bytesWritten', 'shuffleRecordsRead', 'shuffleTotalBlocksFetched', 'shuffleLocalBlocksFetched',
-                     'shuffleRemoteBlocksFetched', 'shuffleTotalBytesRead', 'shuffleLocalBytesRead', 'shuffleRemoteBytesRead',
-                     'shuffleRemoteBytesReadToDisk', 'shuffleBytesWritten', 'shuffleRecordsWritten', 'Description', 'Recommendation'])
-    
-    # Start date
-    start_date = datetime.now() - timedelta(days=days)
-    
-    # Generate mock data for each day and each job
-    for day in range(days):
-        date = start_date + timedelta(days=day)
-        for job in range(jobs):
-            jobId = f"job_{job}"
-            
-            jvmGCTime = random.randint(50, 150)  # normal value
-            description = "Normal JVM Garbage Collection time."
-            recommendation = "No action needed."
-            
-            # Introduce abnormal parameter occasionally
-            if random.random() < 0.1:  # ~10% of the time
-                jvmGCTime = random.randint(1000, 2000)  # abnormal value between 1000 ms and 2000 ms
-                description = "The elevated JVM Garbage Collection time implies that the JVM is spending a substantial amount of time reclaiming memory, potentially affecting the job’s overall performance."
-                recommendation = "To minimize Garbage Collection overhead, consider fine-tuning the memory configuration of your Spark application, like adjusting the executor and driver memory, and optimizing the data processing to be more memory-efficient."
+# 2. Time-based Features
+df['hour'] = df['date'].dt.hour  # Hour of the day
+df['day_of_week'] = df['date'].dt.dayofweek  # Day of the week
+df['day_of_month'] = df['date'].dt.day  # Day of the month
+df['is_weekend'] = df['day_of_week'].apply(lambda x: 1 if x >= 5 else 0)  # 1 if the day is weekend, 0 otherwise
 
-            writer.writerow([date, jobId, 
-                             random.randint(1, 10),  # numStages
-                             random.randint(10, 100),  # numTasks
-                             random.randint(500, 2000),  # elapsedTime
-                             random.randint(500, 1500),  # stageDuration
-                             random.randint(2000, 5000),  # executorRunTime
-                             random.randint(1000, 3000),  # executorCpuTime
-                             random.randint(2000, 4000),  # executorDeserializeTime
-                             random.randint(800, 2000),  # executorDeserializeCpuTime
-                             random.randint(1, 10),  # resultSerializationTime
-                             jvmGCTime,  # jvmGCTime
-                             random.randint(0, 20),  # shuffleFetchWaitTime
-                             random.randint(10, 30),  # shuffleWriteTime
-                             random.randint(10000, 20000),  # resultSize
-                             0,  # diskBytesSpilled
-                             0,  # memoryBytesSpilled
-                             0,  # peakExecutionMemory
-                             random.randint(1000, 3000),  # recordsRead
-                             0,  # bytesRead
-                             0,  # recordsWritten
-                             0,  # bytesWritten
-                             random.randint(5, 15),  # shuffleRecordsRead
-                             random.randint(5, 15),  # shuffleTotalBlocksFetched
-                             random.randint(5, 15),  # shuffleLocalBlocksFetched
-                             0,  # shuffleRemoteBlocksFetched
-                             random.randint(400, 500),  # shuffleTotalBytesRead
-                             random.randint(400, 500),  # shuffleLocalBytesRead
-                             0,  # shuffleRemoteBytesRead
-                             0,  # shuffleRemoteBytesReadToDisk
-                             random.randint(400, 500),  # shuffleBytesWritten
-                             random.randint(5, 15),  # shuffleRecordsWritten
-                             description, recommendation  # Added Description and Recommendation
-                             ])
+# 3. Domain-specific Features
+df['ratio_jvmGCTime_executorRunTime'] = df['jvmGCTime'] / df['executorRunTime']  # Ratio of jvmGCTime to executorRunTime
+df['ratio_jvmGCTime_elapsedTime'] = df['jvmGCTime'] / df['elapsedTime']  # Ratio of jvmGCTime to elapsedTime
 
-print(f"Mock data generated and saved to {filename}")
+# Handling infinite values after division
+df.replace([np.inf, -np.inf], np.nan, inplace=True)  
+df.dropna(inplace=True)  # Drop NaN rows resulting from division by zero in ratio calculation
+
+# 1. Statistical Features
+# Rolling Mean & Standard Deviation
+window_size = 7  # A one-week window. You can change this value based on your analysis
+df['rolling_mean_jvmGCTime'] = df['jvmGCTime'].rolling(window=window_size).mean()
+df['rolling_std_jvmGCTime'] = df['jvmGCTime'].rolling(window=window_size).std()
+
+# Z-Score
+df['zscore_jvmGCTime'] = zscore(df['jvmGCTime'])
+
+# Drop the rows with NaN values introduced by rolling features
+df = df.dropna()
+
+# Preview the modified DataFrame
+df.head()
