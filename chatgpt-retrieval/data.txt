@@ -1,0 +1,11 @@
+Model Suggestions:
+Isolation Forest: Effective for detecting anomalies in high-dimensional datasets.
+One-Class SVM: Suitable for detecting anomalies in the data.
+Autoencoders: Neural networks that are effective in learning the representation of the data and detecting anomalies.
+XGBoost, LightGBM or CatBoost: Gradient boosting models that can handle mixed-type data and can capture complex patterns.
+
+numStages, numTasks, elapsedTime, stageDuration, executorRunTime, executorCpuTime, executorDeserializeTime, executorDeserializeCpuTime, resultSerializationTime, jvmGCTime:
+These are important features that reflect the performance and resource utilization of the Spark jobs and can impact JVM GC time.
+
+shuffleFetchWaitTime, shuffleWriteTime, resultSize:
+These features might have an influence on job performance and thus on JVM GC time.
