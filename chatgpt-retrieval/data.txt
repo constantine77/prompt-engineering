@@ -1,5 +1,0 @@
-# Define columns to drop
-cols_to_drop = ['diskBytesSpilled', 'memoryBytesSpilled', 'peakExecutionMemory', 'bytesRead', 'recordsWritten', 'bytesWritten', 'shuffleRemoteBlocksFetched', 'shuffleRemoteBytesRead', 'shuffleRemoteBytesReadToDisk']
-
-# Drop the columns from the dataframe
-df = df.drop(columns=cols_to_drop)
