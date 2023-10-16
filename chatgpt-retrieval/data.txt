@@ -1,99 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
+from pyspark.sql import SparkSession
 
-<head>
-    <meta charset="UTF-8">
-    <title>OptimizePrime</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
+# Create a Spark session with Delta Lake support
+spark = SparkSession.builder \
+    .appName("DeltaLakeSchemaReader") \
+    .config("spark.jars.packages", "io.delta:delta-core_2.12:1.0.0") \
+    .getOrCreate()
 
-<body>
-    <header>
-        <div class="container">
-            <h1 class="logo">OptimizePrime</h1>
-        </div>
-    </header>
-    <main class="container">
-        <section class="onboarding">
-            <form class="onboarding-form">
-                <label for="projectName">Project Name:</label>
-                <input type="text" id="projectName" name="projectName" required>
+# Mock Delta Lake data for the sake of this example
+data = [
+    ("John", 28, "New York"),
+    ("Mike", 22, "Los Angeles"),
+    ("Sara", 30, "Chicago")
+]
+df = spark.createDataFrame(data, ["name", "age", "city"])
+delta_path = "/tmp/delta-table"
+df.write.format("delta").save(delta_path)
 
-                <label for="sparkCommand">Spark Submit Command:</label>
-                <input type="text" id="sparkCommand" name="sparkCommand" required>
+# Read the Delta Lake table schema
+delta_df = spark.read.format("delta").load(delta_path)
+print(delta_df.schema)
 
-                <label for="github">GitHub Location for Properties File:</label>
-                <input type="url" id="github" name="github" required>
-
-                <label for="metrics">Metrics Input Box:</label>
-                <textarea id="metrics" name="metrics" rows="4" required></textarea>
-
-                <button type="submit" class="btn">Submit</button>
-            </form>
-        </section>
-        <section class="metrics">
-            <label for="jobId">Job ID:</label>
-            <input type="text" id="jobId" name="jobId" required>
-            <button class="btn" onclick="checkMetrics()">Check Metrics</button>
-            <div id="metrics-output"></div>
-        </section>
-    </main>
-    <script>
-        function checkMetrics() {
-            var jobId = document.getElementById("jobId").value;
-            if (jobId === "") {
-                alert("Please enter a Job ID");
-                return;
-            }
-
-            var metricsContent = {
-                "data": "2020-09-27 12:13:34.651021",
-                "jobId": "job_1",
-                "numStages": 5,
-                "numTasks": 50,
-                "elapsedTime": "5000 (5 s)",
-                "stageDuration": "4000 (4 s)",
-                "executorRunTime": "9000 (9 s)",
-                "executorCpuTime": "8000 (8 s)",
-                "executorDeserializeTime": "7000 (7 s)",
-                "executorDeserializeCpuTime": "6000 (6 s)",
-                "resultSerializationTime": "150 (150 ms)",
-                "jvmGCTime": "500 (500 ms)",
-                "shuffleFetchWaitTime": "200 (200 ms)",
-                "shuffleWriteTime": "300 (300 ms)",
-                "resultSize": "50000 (48.83 KB)",
-                "diskBytesSpilled": "1000 (1 KB)",
-                "memoryBytesSpilled": "2000 (2 KB)",
-                "peakExecutionMemory": 10000,
-                "recordsRead": 10000,
-                "bytesRead": "5000 (5 KB)",
-                "recordsWritten": 5000,
-                "bytesWritten": "2500 (2.5 KB)",
-                "shuffleRecordsRead": 40,
-                "shuffleTotalBlocksFetched": 40,
-                "shuffleLocalBlocksFetched": 30,
-                "shuffleRemoteBlocksFetched": 10,
-                "shuffleTotalBytesRead": "2000 (2 KB)",
-                "shuffleLocalBytesRead": "1500 (1.5 KB)",
-                "shuffleRemoteBytesRead": "500 (0.5 KB)",
-                "shuffleRemoteBytesReadToDisk": "100 (0.1 KB)",
-                "shuffleBytesWritten": "1000 (1 KB)",
-                "shuffleRecordsWritten": 20,
-                "label": "abnormal",
-                "description": "The elevated JVM Garbage Collection time implies that the JVM is spending a substantial amount of time reclaiming memory, potentially affecting the job’s overall performance.",
-                "recommendation": "To minimize Garbage Collection overhead, consider fine-tuning the memory configuration of your Spark application, like adjusting the executor and driver memory, and optimizing the data processing to be more memory-efficient."
-            };
-
-            var outputDiv = document.getElementById("metrics-output");
-            outputDiv.innerHTML = ''; // Clear the existing content
-            for (var key in metricsContent) {
-                var value = metricsContent[key];
-                var element = document.createElement("div");
-                element.textContent = key + ": " + value;
-                outputDiv.appendChild(element);
-            }
-        }
-    </script>
-</body>
-
-</html>
+spark.stop()
