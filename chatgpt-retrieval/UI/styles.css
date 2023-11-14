@@ -1,0 +1,82 @@
+body {
+    font-family: 'SF Pro Display', 'SF Pro Icons', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: #ffffff;
+    margin: 0;
+    padding: 0;
+    color: #1d1d1f;
+}
+
+.container {
+    width: 70%;
+    margin: auto;
+}
+
+header {
+    background-color: #007AFF;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    font-size: 2.5em;
+    color: #ffffff;
+}
+
+.intro {
+    background-color: #E6F7FF;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 5px;
+}
+
+.onboarding,
+.metrics,
+.recommendation {
+    background-color: #ffffff;
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+label,
+input,
+textarea,
+button {
+    display: block;
+    margin-bottom: 20px;
+}
+
+input,
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.btn {
+    background-color: #007AFF;
+    color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+}
+
+.btn:hover {
+    background-color: #0056D6;
+}
+
+footer {
+    background-color: #f1f1f1;
+    color: #1d1d1f;
+    text-align: center;
+    padding: 10px;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+}
