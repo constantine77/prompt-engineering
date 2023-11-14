@@ -1,69 +1,35 @@
-Approach 1: SQL Wrapper Function in SparkSession
-Implementation Plan:
+Delta File
+A Delta file is a component of a Delta Lake, a storage layer that brings ACID (Atomicity, Consistency, Isolation, Durability) transactions to Apache Spark and big data workloads.
 
-Define Wrapper Function:
+Key Characteristics:
 
-Create a custom function in SparkSession that can accept SQL statements.
-The function should be able to parse and understand different types of SQL merge statements.
-Integrate Governance Checks:
+Incremental Updates: Delta files store data in small, incremental updates (deltas) rather than rewriting entire files. This approach is efficient for both storage and processing.
 
-Within the wrapper function, incorporate code to perform data quality checks, schema validation, and tokenization.
-Ensure that these checks are run before the actual merge happens.
-SQL Execution:
+Version Control: They enable version control of data. Each time a change is made (like an insert, update, or delete), a new version of the file is created. This helps in tracking historical changes and enables features like time-travel queries.
 
-Once the checks are passed, the function should pass the SQL statement to the underlying SQL execution engine in Spark.
-Handle errors or exceptions that might occur during SQL execution.
-Testing and Validation:
+Optimized for Big Data: Delta files are designed to handle large datasets efficiently, making them suitable for big data applications.
 
-Test the function with different types of merge scenarios to ensure it handles all cases correctly.
-Validate that governance checks are being applied correctly.
-Documentation and Deployment:
+Compatibility: They are often stored in Parquet format, making them compatible with a wide range of data processing tools.
 
-Document the usage of the function and any limitations or considerations.
-Deploy the function in your Spark environment and integrate it with existing workflows.
-Approach 2: Custom Merge Command
-Implementation Plan:
+Schema Enforcement and Evolution: Delta files can enforce a schema upon write operations and allow for schema evolution over time.
 
-Design the Custom Command:
+Delta Merge
+Delta Merge refers to the operation in Delta Lake that allows for the merging of two datasets. It's analogous to the SQL MERGE command and is particularly useful for upserts (updating existing records and inserting new records).
 
-Develop a custom command or API that abstracts the merge operation.
-Define the inputs, such as the DataFrame to be merged and any configuration parameters.
-Implement Governance Checks:
+How It Works:
 
-Integrate data quality checks, schema validation, and tokenization processes within the command.
-Ensure these checks are performed before merging the DataFrame with the target table.
-Merge Logic:
+Combining Datasets: Delta Merge combines a source dataset (like a DataFrame) with a target Delta table. The source dataset can contain new records to be inserted and/or updates to existing records in the target table.
 
-Implement the logic to perform the actual merge operation, handling inserts and updates as needed.
-Optimize the merge process for performance and reliability.
-Testing and Optimization:
+Matching Records: It typically involves specifying a condition to match records in the source dataset with those in the target table. For matched records, updates are applied, and for non-matched records, inserts are performed.
 
-Test the command with various datasets and merge scenarios.
-Optimize performance, handling large datasets and complex merge conditions.
-Documentation and Deployment:
+ACID Transactions: These merge operations are ACID compliant, ensuring data integrity and consistency even in the presence of faults and concurrent transactions.
 
-Document how to use the custom command, including any configurations and limitations.
-Deploy the command in the Spark environment, ensuring compatibility with existing systems.
-Approach 3: Custom Spark Extension for Logical Plan Modification
-Implementation Plan:
+Efficiency: Delta Merge is optimized for performance and can handle large datasets efficiently, reducing the need to rewrite entire tables for updates.
 
-Develop the Spark Extension:
+Use Cases: Common use cases include upserting change data for ETL processes, slowly changing dimension (SCD) type operations in data warehousing, and stream processing.
 
-Create a custom Spark extension that can intercept and modify the logical plan of Spark operations.
-Focus on identifying and altering the logical plan for merge operations.
-Integrate Governance Checks:
+In summary, Delta files are a part of the Delta Lake architecture designed for efficient and reliable storage of big data, while Delta Merge is an operation that allows for the efficient combination of datasets within this framework, particularly useful for upsert operations in large-scale data environments.
 
-Implement the necessary code to perform data quality checks, schema validation, and tokenization as part of the logical plan modification.
-Ensure these checks are executed before the merge operation in the logical plan.
-Modify Logical Plan for Merge:
 
-Customize the extension to recognize and override merge commands in the logical plan.
-Replace standard merge operations with your version that includes governance checks.
-Testing and Compatibility Checks:
 
-Thoroughly test the extension with different Spark versions and configurations.
-Ensure that it works correctly with various data formats and merge scenarios.
-Documentation and Deployment:
 
-Document the extension, including how to install, configure, and use it in a Spark environment.
-Deploy the extension in your Spark cluster, ensuring it integrates well with the existing setup.
