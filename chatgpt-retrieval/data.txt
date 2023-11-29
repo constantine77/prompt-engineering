@@ -1,0 +1,65 @@
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.SparkSessionExtensions
+import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, MergeIntoTable}
+import org.apache.spark.sql.catalyst.rules.Rule
+
+// Define the custom Spark extension
+class DeltaMergeExtension extends (SparkSessionExtensions => Unit) {
+  override def apply(extensions: SparkSessionExtensions): Unit = {
+    extensions.injectResolutionRule(_ => DeltaMergeGovernanceRule())
+  }
+}
+
+object DeltaMergeGovernanceRule {
+  def apply(): Rule[LogicalPlan] = new DeltaMergeGovernanceRule
+}
+
+// Create the custom rule for the extension
+class DeltaMergeGovernanceRule extends Rule[LogicalPlan] {
+  override def apply(plan: LogicalPlan): LogicalPlan = plan transform {
+    case merge: MergeIntoTable =>
+      // Apply governance checks (mocked for this example)
+      println("Governance checks applied to MergeIntoTable operation.")
+      merge
+    case other => other
+  }
+}
+
+// Main application to test the extension
+object DeltaMergeTestApp extends App {
+  val spark = SparkSession.builder()
+    .appName("Delta Merge Test")
+    .master("local")
+    .withExtensions(new DeltaMergeExtension)
+    .getOrCreate()
+
+  import spark.implicits._
+
+  // Example DataFrame and mock merge operation
+  val df = Seq((1, "Alice"), (2, "Bob")).toDF("id", "name")
+
+  // Normally, you would perform a Delta Merge operation here.
+  // For this example, we'll just show the DataFrame.
+  df.show()
+
+  spark.stop()
+}
+
+
+<dependencies>
+    <dependency>
+        <groupId>org.apache.spark</groupId>
+        <artifactId>spark-core_2.12</artifactId>
+        <version>3.1.1</version> <!-- Use the appropriate Spark version -->
+    </dependency>
+    <dependency>
+        <groupId>org.apache.spark</groupId>
+        <artifactId>spark-sql_2.12</artifactId>
+        <version>3.1.1</version>
+    </dependency>
+    <dependency>
+        <groupId>io.delta</groupId>
+        <artifactId>delta-core_2.12</artifactId>
+        <version>1.0.0</version> <!-- Use the appropriate Delta Lake version -->
+    </dependency>
+</dependencies>
