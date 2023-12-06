@@ -1,0 +1,82 @@
+To implement the injected post-resolution rule for analyzing and modifying the logical plan in a Spark session, we'll focus on the steps involving the detection and alteration of `MergeIntoTable` commands. This rule will be part of a custom Spark session extension. Here's how you can implement each step with code examples:
+
+### Step 1: Injected Rule Post-Resolution MergeRule Parses Logical Plan
+
+First, you need to create a custom rule that will analyze the logical plan and look for `MergeIntoTable` commands.
+
+#### Custom Rule Implementation
+
+```scala
+import org.apache.spark.sql.catalyst.rules.Rule
+import org.apache.spark.sql.catalyst.plans.logical.{LogicalPlan, MergeIntoTable}
+
+object PostMergeRule extends Rule[LogicalPlan] {
+  def apply(plan: LogicalPlan): LogicalPlan = plan transform {
+    case mergeInto: MergeIntoTable =>
+      // Proceed to check if the table is Delta and if it's published by OSDG
+      handleMergeInto(mergeInto)
+    case other => other // No modification for other types of commands
+  }
+
+  def handleMergeInto(mergeInto: MergeIntoTable): LogicalPlan = {
+    // Implement logic to check for Delta MergeIntoCommand and OSDG publishing
+    // For now, returning the original command for simplicity
+    mergeInto
+  }
+}
+```
+
+### Step 2: Check if Contains Delta MergeIntoCommand
+
+In the `handleMergeInto` method, implement logic to check if the `MergeIntoTable` command is for a Delta table. This can be inferred from the table's metadata or the format of the table.
+
+### Step 3: Call Governance Endpoint if OSDG Published
+
+If the Delta table is identified as being published by OSDG (One Stream Data Governance), you would make an API call to your governance service.
+
+#### Example of Making an API Call (Simplified)
+
+```scala
+import scala.io.Source
+import scala.util.Try
+
+def callGovernanceService(tablePath: String): Boolean = {
+  val endpoint = s"http://your-governance-service/api?tablePath=$tablePath"
+  Try(Source.fromURL(endpoint).mkString).isSuccess
+  // You need to replace this with actual logic to parse the response and determine if the table is published by OSDG
+}
+```
+
+### Step 4: Swap Delta Command `MergeIntoTable` for `OneStreamMergeCommand`
+
+If the table is a Delta table and is published by OSDG, replace the `MergeIntoTable` command with a custom command that incorporates your governance checks.
+
+#### Creating a Custom Command
+
+```scala
+case class OneStreamMergeCommand(originalCommand: MergeIntoTable) extends LogicalPlan {
+  // Copy child nodes from the original command
+  override def children: Seq[LogicalPlan] = originalCommand.children
+
+  // Implement the custom merge logic with governance checks
+  // ...
+}
+```
+
+### Step 5: Apply Custom Command or Retain Original Plan
+
+In the `handleMergeInto` method, apply the custom command if conditions are met; otherwise, retain the original logical plan.
+
+#### Applying the Custom Logic
+
+```scala
+def handleMergeInto(mergeInto: MergeIntoTable): LogicalPlan = {
+  val deltaTablePath = extractPathFromMergeInto(mergeInto)
+  if (isDeltaTable(deltaTablePath) && callGovernanceService(deltaTablePath)) {
+    OneStreamMergeCommand(mergeInto) // Apply the custom merge command
+  } else {
+    mergeInto // Retain the original command
+  }
+}
+```
+
