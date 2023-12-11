@@ -1,417 +1,297 @@
-Certainly! Let's dive into the details of time series classification and using XGBoost for this purpose.
+Developing a project involving the implementation of a custom Spark extension for Delta Merge operations with governance checks is a complex task. It can be broken down into several development stages, each with its own set of tasks. Here's a proposed breakdown for creating milestones and timelines:
 
-### Time Series Classification
+### Stage 1: Planning and Design
+**Duration:** 1-2 Weeks
+1. **Requirement Analysis:** Understand and document specific requirements for data quality, schema validation, and tokenization.
+2. **Design Phase:** Outline the architecture of the custom Spark extension and the Post-Merge Logic.
+3. **Technology Stack Assessment:** Confirm the technology stack, including the version of Spark, Delta Lake, and any other tools or libraries needed.
+4. **Project Timeline Planning:** Develop a detailed project timeline with milestones.
 
-Time series classification involves categorizing time series data into different classes or groups. A time series is a sequence of data points typically consisting of successive measurements made over a time interval. Examples include daily stock prices, monthly sales data, yearly climate data, etc.
+### Stage 2: Development of Custom Spark Extension
+**Duration:** 3-4 Weeks
+1. **Custom Extension Development:**
+   - Define the custom Spark session extension (`OneLakeSparkSessionExtension`).
+   - Implement the `apply` method and the logic to inject the PostMergeRule.
+2. **Post-Resolution Merge Rule Development:**
+   - Define `PostMergeRule` with logic to analyze the logical plan.
+   - Implement custom logic for handling `MergeIntoTable` commands and checking if the table is SDK published.
+3. **Integration Testing:**
+   - Test the custom extension and rule in a development Spark environment.
+   - Ensure that the extension correctly modifies the logical plan.
 
-#### Key Concepts:
-1. **Time Series Data**: Unlike regular classification problems, time series data has a temporal dimension. This means that the order of observations is important.
+### Stage 3: Pre-Merge and Post-Merge Logic Implementation
+**Duration:** 4-5 Weeks
+1. **Pre-Merge Logic Implementation:**
+   - Develop the logic to identify rows for insertion/update.
+   - Implement the merge operation logic.
+   - Generate the final DataFrame without writing it out.
+2. **Post-Merge Logic Implementation:**
+   - Extend the `MergeIntoCommand` to override the `repartitionIfNeeded` method.
+   - Implement governance checks (schema validation, data quality, tokenization).
+3. **Unit Testing and Validation:**
+   - Conduct thorough unit tests for pre-merge and post-merge logic.
+   - Validate that governance checks are correctly applied.
 
-2. **Feature Engineering**: Extracting features from time series data is crucial. This can include statistical measures like mean, median, standard deviation, trends, seasonality components, autocorrelation coefficients, etc.
+### Stage 4: Integration with Governance Service
+**Duration:** 2-3 Weeks
+1. **Governance Service API Integration:**
+   - Develop functionality to call the governance API.
+   - Retrieve and process metadata for schema, data quality rules, etc.
+2. **End-to-End Testing:**
+   - Perform end-to-end testing to ensure that the entire system works seamlessly.
+   - Validate the integration with the governance service.
 
-3. **Windowing**: Often, time series data is segmented into windows (e.g., rolling windows) to capture temporal dynamics.
+### Stage 5: Quality Assurance and Documentation
+**Duration:** 2 Weeks
+1. **Quality Assurance (QA):**
+   - Conduct thorough QA testing.
+   - Identify and fix any bugs or issues.
+2. **Documentation:**
+   - Create comprehensive documentation for the system.
+   - Include usage instructions, architecture details, and troubleshooting guidelines.
 
-4. **Normalization**: Time series data often needs to be normalized, particularly when dealing with multiple scales or units.
+### Stage 6: Deployment and Training
+**Duration:** 1-2 Weeks
+1. **Deployment:**
+   - Plan and execute the deployment of the solution in the production environment.
+2. **Training and Knowledge Transfer:**
+   - Conduct training sessions for end-users and developers.
+   - Transfer knowledge to the maintenance team.
 
-### XGBoost for Time Series Classification
-
-XGBoost (eXtreme Gradient Boosting) is a powerful, efficient, and widely used machine learning algorithm that is particularly adept at structured/tabular data. It's an implementation of gradient boosted decision trees designed for speed and performance.
-
-#### Using XGBoost for Time Series:
-1. **Feature Extraction**: Convert time series data into a feature matrix. Each row represents an observation, and columns are the features extracted from the time series (like lagged values, rolling window statistics, Fourier transforms, etc.).
-
-2. **Model Training**: Train an XGBoost model on this feature matrix. XGBoost handles feature interactions and non-linear relationships well.
-
-3. **Hyperparameter Tuning**: Adjust parameters like `max_depth`, `eta`, `subsample`, and `colsample_bytree` for optimal performance.
-
-4. **Evaluation**: Use time-sensitive cross-validation techniques, like Time Series Split or walk-forward validation, to evaluate the model.
-
-### Building a Model, Feature Generation, Training, and Prediction
-
-#### 1. Data Preparation
-   - **Data Cleaning**: Handle missing values, outliers, and anomalies.
-   - **Data Transformation**: Convert time series into a supervised learning problem. Lag features and rolling windows are common techniques.
-
-#### 2. Feature Engineering
-   - **Statistical Features**: Mean, variance, skewness, kurtosis over rolling windows.
-   - **Temporal Features**: Day of week, month, year, and other calendar attributes.
-   - **Domain-Specific Features**: Based on the specific characteristics of your dataset.
-
-#### 3. Model Training with XGBoost
-   - Initialize an XGBoost classifier: `xgb = XGBClassifier(...)`.
-   - Train the model: `xgb.fit(X_train, y_train)`.
-   - Hyperparameter tuning can be done using tools like GridSearchCV or RandomizedSearchCV.
-
-#### 4. Evaluation and Prediction
-   - Evaluate the model using appropriate metrics like accuracy, AUC-ROC, etc.
-   - Perform predictions: `predictions = xgb.predict(X_test)`.
-
-#### 5. Model Interpretation
-   - Feature importance analysis to understand what drives your model's decisions.
-
-### Tools and Libraries
-- Python libraries like `pandas` for data manipulation, `numpy` for numerical operations, `matplotlib` and `seaborn` for plotting, and `xgboost` for the model.
-- For larger datasets or more complex pipelines, tools like Apache Spark can be useful.
-
-### Learning Resources
-- Online courses on platforms like Coursera, edX, or Udacity focusing on time series analysis and machine learning.
-- Books like "Forecasting: Principles and Practice" by Rob J Hyndman and George Athanasopoulos, "Python for Data Analysis" by Wes McKinney.
-- Blogs and tutorials specific to time series analysis and XGBoost.
-
-### Conclusion
-Time series classification with XGBoost is a potent combination for handling a variety of problems where time is an important factor. The key is in proper feature engineering and understanding the temporal dynamics of your data. As with any machine learning task, iterative experimentation and evaluation are vital to achieving good results.
-
-
-Certainly! Let's break down the concept of time series classification with XGBoost for beginners, including some basic examples.
-
-### What is Time Series Data?
-
-A time series is a sequence of data points collected or measured at successive points in time. For example, daily temperatures, monthly sales, or stock prices recorded every minute are all time series data. In time series classification, the goal is to predict a category or class for each time series in the dataset.
-
-### What is XGBoost?
-
-XGBoost (eXtreme Gradient Boosting) is a powerful machine learning algorithm used for supervised learning tasks. It's an implementation of gradient boosting machines, which are tree-based models. XGBoost is known for its high performance and speed.
-
-### Time Series Classification with XGBoost - A Basic Example
-
-Let's consider a simple example. Imagine you have a dataset of daily weather observations (temperature, humidity, etc.) and you want to classify each day as either "Sunny", "Rainy", or "Cloudy".
-
-#### Step 1: Data Preparation
-You have a dataset like this:
-
-```
-Date       | Temperature | Humidity | Weather
------------------------------------------------
-2021-01-01 | 25          | 80       | Rainy
-2021-01-02 | 30          | 50       | Sunny
-...
-```
-
-#### Step 2: Feature Engineering
-XGBoost doesn't understand time series data directly, so you need to convert this data into a format it can understand. This process is called feature engineering. For time series, this often involves creating lag features (past values), rolling window statistics (like moving averages), and so on.
-
-For example, you could create features like yesterday's temperature, the average humidity over the past 3 days, etc.
-
-#### Step 3: Preparing for Classification
-Let's turn this into a simple classification problem. Your target variable (what you want to predict) is `Weather`. The other columns are your features.
-
-#### Step 4: Using XGBoost for Classification
-Now, you'll use XGBoost to classify the weather. In Python, it might look something like this:
-
-```python
-import xgboost as xgb
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-
-# Assuming df is your DataFrame after feature engineering
-X = df[['Temperature', 'Humidity', 'Yesterday_Temp', '3day_Humidity_avg']]  # Features
-y = df['Weather']  # Target
-
-# Splitting the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Initialize an XGBoost classifier
-model = xgb.XGBClassifier(objective='multi:softprob', num_class=3)
-
-# Train the model
-model.fit(X_train, y_train)
-
-# Make predictions
-y_pred = model.predict(X_test)
-
-# Evaluate the model
-accuracy = accuracy_score(y_test, y_pred)
-print(f"Accuracy: {accuracy}")
-```
-
-In this code:
-
-- We're using `XGBClassifier` for a multi-class classification problem.
-- The model is trained on the training data and then makes predictions on the test data.
-- Finally, we evaluate the model's performance, here with accuracy.
-
-#### Note:
-- Real-world time series data often requires careful preprocessing, including handling missing values and anomalies.
-- Feature engineering is crucial in time series analysis and depends highly on the specific characteristics of your data.
+### Stage 7: Monitoring and Feedback Incorporation
+**Duration:** Ongoing
+1. **Monitoring:**
+   - Continuously monitor the system post-deployment.
+   - Identify any performance issues or bugs.
+2. **Feedback Incorporation:**
+   - Gather feedback from users.
+   - Plan and implement improvements based on feedback.
 
 ### Conclusion
-This is a basic introduction to classifying time series data using XGBoost. In real-world scenarios, you'll deal with more complex data and might need to use more advanced techniques in preprocessing and feature engineering. The key is to effectively transform the time series data into a format suitable for XGBoost or other machine learning models.
+This project requires careful planning, skilled development, thorough testing, and continuous monitoring. Each stage may overlap or require adjustments based on the project's progress and discoveries. Coordination with stakeholders, regular status updates, and risk management are crucial throughout the project lifecycle.
 
-Certainly! Using a trained model typically involves two major steps: model loading and making predictions. Let's go through an example to illustrate this process, using a hypothetical model trained with XGBoost for time series classification.
+###########
+###########
+###########
 
-### Example Scenario
-Imagine you have a trained XGBoost model for predicting weather conditions ('Sunny', 'Rainy', 'Cloudy') based on time series data such as temperature and humidity. 
+Certainly! Writing user stories and defining acceptance criteria is a key part of agile software development. Here's how you might structure user stories and their corresponding acceptance criteria for the project involving the implementation of a custom Spark extension for Delta Merge operations with governance checks.
 
-### Step 1: Saving/Loading the Trained Model
-After training a model, you need to save it so that it can be used later for making predictions. Let’s assume you have already trained and saved an XGBoost model.
+### User Story 1: Implement Custom Spark Session Extension
 
-#### Saving the Model:
-```python
-import xgboost as xgb
+**As a** data engineer,
+**I want to** implement a custom Spark session extension,
+**So that** I can inject custom behavior into Spark sessions for enhanced Delta Merge operations.
 
-# Assuming 'model' is your trained XGBoost model
-model.save_model('weather_predictor.model')
-```
+#### Acceptance Criteria:
+1. **Extension Definition:** A new Spark session extension class (`OneLakeSparkSessionExtension`) is defined.
+2. **Injection Capability:** The extension is able to inject custom rules (`PostMergeRule`) into Spark sessions.
+3. **Documentation:** The extension and its functionalities are well-documented.
 
-#### Loading the Model:
-When you want to use this model, you first need to load it.
+### User Story 2: Develop Post-Resolution Merge Logic
 
-```python
-loaded_model = xgb.XGBClassifier()
-loaded_model.load_model('weather_predictor.model')
-```
+**As a** data engineer,
+**I want to** develop a post-resolution merge logic rule,
+**So that** I can analyze and modify logical plans for MergeIntoTable commands as per governance checks.
 
-### Step 2: Preparing Data for Prediction
-To make predictions, your input data must be in the same format as the data you used to train your model. This often involves the same feature engineering steps.
+#### Acceptance Criteria:
+1. **Rule Creation:** The `PostMergeRule` is defined and capable of processing Spark's logical plans.
+2. **MergeIntoTable Command Handling:** The rule successfully identifies and handles `MergeIntoTable` commands.
+3. **Test Coverage:** Unit tests confirm the rule's functionality and its impact on logical plans.
 
-Let’s assume you have a new set of data for which you want to predict the weather:
+### User Story 3: Integrate Governance Service
 
-```python
-# New data (e.g., obtained from sensors or a new dataset)
-new_data = {'Temperature': [28], 'Humidity': [60], 'Yesterday_Temp': [27], '3day_Humidity_avg': [65]}
-new_df = pd.DataFrame(new_data)
-```
+**As a** data engineer,
+**I want to** integrate a governance service,
+**So that** I can fetch dataset details, schema, data quality rules, and tokenization rules for SDK published Delta tables.
 
-### Step 3: Making Predictions
-Now you can use the loaded model to make predictions on the new data.
+#### Acceptance Criteria:
+1. **API Integration:** The system can call the governance service API and retrieve necessary metadata.
+2. **Data Processing:** The system correctly processes and utilizes the metadata from the governance service.
+3. **Error Handling:** Proper error handling is implemented for API call failures or data processing issues.
 
-```python
-predictions = loaded_model.predict(new_df)
-print(predictions)  # This will show the predicted weather conditions
-```
+### User Story 4: Implement Pre-Merge and Post-Merge Logic
 
-In this example, `predictions` will contain the predicted weather conditions for the input data in `new_df`.
+**As a** data engineer,
+**I want to** implement pre-merge and post-merge logic,
+**So that** I can ensure the data integrity and compliance of the merge operations.
 
-### Additional Considerations:
-- **Data Preprocessing**: Ensure that any preprocessing (like normalization or scaling) applied to the training data is also applied to the new data before making predictions.
-- **Model Updates**: If your model's performance decreases over time, consider retraining it with new data.
-- **Deployment**: For real-world applications, models are often deployed to a server or a cloud environment to provide predictions as a service.
+#### Acceptance Criteria:
+1. **Pre-Merge Logic:** Logic to identify rows for insertion/update and to generate the final DataFrame is implemented.
+2. **Post-Merge Logic:** Custom logic to apply governance checks (schema validation, data quality, tokenization) after merge is developed.
+3. **Integration Test:** The entire merge operation, including pre and post-merge logic, is successfully tested in an integrated environment.
 
-### Example in a Web Application
-If you're integrating the model into a web application, you would typically expose the prediction functionality through an API.
+### User Story 5: Conduct End-to-End Testing and QA
 
-- The web server receives input data through API requests.
-- It then preprocesses the input data and feeds it to the model.
-- The model makes a prediction, and the server sends this back as an API response.
+**As a** QA engineer,
+**I want to** conduct end-to-end testing,
+**So that** I can ensure the system works seamlessly and meets all requirements.
 
-### Conclusion
-Using a trained model effectively involves loading the model, ensuring that new input data is in the correct format, and then using the model to make predictions. This process can be integrated into various applications, depending on your needs and the nature of your project.
+#### Acceptance Criteria:
+1. **End-to-End Testing:** All components work together as expected in a simulated production environment.
+2. **Bug-Free:** Critical bugs are identified and resolved.
+3. **Performance Metrics:** The system meets the performance benchmarks set for merge operations.
 
-Absolutely! Let's break down XGBoost for someone new to machine learning.
+### User Story 6: Documentation and Training
 
-### What is XGBoost?
+**As a** project manager,
+**I want to** ensure comprehensive documentation and training,
+**So that** end-users and maintenance teams can effectively use and support the system.
 
-XGBoost stands for eXtreme Gradient Boosting. It's an advanced implementation of gradient boosting algorithm. The "gradient boosting" technique is a way to build a highly accurate predictive model by combining many simple models (known as "weak learners" or "base learners"). In the case of XGBoost, these simple models are decision trees.
-
-### Key Concepts of XGBoost
-
-1. **Decision Trees**: XGBoost builds its model using a number of decision trees. A decision tree is like a flowchart that asks a series of questions about the features of the data points. Depending on the answers, the tree routes the data points and eventually assigns them a prediction.
-
-2. **Gradient Boosting**: This is where XGBoost gets its power. It involves three elements: a loss function to be optimized, a weak learner to make predictions, and an additive model to add weak learners to minimize the loss function.
-
-3. **Loss Function**: This is what the model tries to minimize. In a regression problem, it could be the mean squared error between the predicted and actual values. In classification, it might be log loss.
-
-4. **Additive Model**: XGBoost starts with a single tree and adds more trees one at a time. Each new tree helps correct errors made by the previously trained trees. The model stops adding trees when it can no longer improve.
-
-### Advantages of XGBoost
-
-1. **High Performance and Speed**: XGBoost is very fast and often outperforms other implementations of gradient boosting.
-
-2. **Handling Sparse Data**: XGBoost can handle sparse data (like missing values or zero values) efficiently.
-
-3. **Regularization**: It includes a regularization term to avoid overfitting, which improves its performance.
-
-4. **Scalability and Flexibility**: XGBoost scales to billions of examples and works well on a wide variety of problems.
-
-5. **Tuning Parameters**: There are many tuning parameters like depth of the tree, learning rate, number of trees, etc., which you can optimize to improve the model's performance.
-
-### How XGBoost Works
-
-Imagine you're working on a problem where you need to predict whether an email is spam or not. You have features like the number of specific words, length of the email, time of the day, etc.
-
-1. **First Tree**: XGBoost might start with a decision tree that uses one feature (say, the number of times "offer" appears) to make a crude prediction.
-
-2. **Subsequent Trees**: Each new tree corrects the errors of the previous one. Another tree might focus on emails that were wrongly classified, using another feature like the length of the email.
-
-3. **Combining Trees**: The predictions from all trees are then combined through a weighted sum to produce the final prediction.
-
-### Using XGBoost in Python
-
-Here’s how you might use XGBoost in a Python project:
-
-```python
-import xgboost as xgb
-
-# Load or create your data
-# X, y = ...
-
-# Convert data to DMatrix format, which is optimized for XGBoost
-dtrain = xgb.DMatrix(X, label=y)
-
-# Set parameters (these are just examples)
-params = {
-    'max_depth': 3,
-    'eta': 0.1,
-    'objective': 'binary:logistic',
-    'eval_metric': 'logloss'
-}
-
-# Train the model
-bst = xgb.train(params, dtrain, num_boost_round=100)
-
-# You can now use bst to make predictions
-```
+#### Acceptance Criteria:
+1. **Documentation:** Detailed documentation for the system, including usage, architecture, and troubleshooting, is available.
+2. **Training Sessions:** Successful training sessions for end-users and developers are conducted.
+3. **Knowledge Transfer:** The maintenance team is fully briefed on the system.
 
 ### Conclusion
 
-XGBoost is a powerful, efficient, and widely used tool in the machine learning toolbox. Its ability to handle a variety of types of data and problems, along with its speed and accuracy, makes it a popular choice for both competitions and real-world applications. For beginners, understanding the basics of decision trees and ensemble methods is a great starting point for using XGBoost effectively.
+These user stories and acceptance criteria cover the key aspects of the project, from technical implementation to testing, documentation, and training. They provide clear goals and checkpoints for the project's progress and success.
+##########
+##########
 
-Absolutely! Let's delve into some basic concepts of Machine Learning (ML) with examples to make them easier to understand.
+#######
 
-### 1. What is Machine Learning?
+Creating detailed user stories with acceptance criteria for each component of the Delta Merge implementation project will help guide the development process and ensure that all requirements are met. Below are the user stories for each component:
 
-Machine Learning is a subset of artificial intelligence (AI) that provides systems the ability to automatically learn and improve from experience without being explicitly programmed. It focuses on developing computer programs that can access data and use it to learn for themselves.
+### Custom Extension Component
 
-### 2. Key Concepts
+#### User Story 1: Define Custom Spark Session Extension
+**As a** software developer,
+**I want to** define a custom Spark session extension,
+**So that** I can inject custom behavior into Spark sessions.
 
-#### a. Supervised Learning
-   - **Description**: The model is trained on labeled data. Here, 'labeled data' means we have both input data and corresponding correct output.
-   - **Example**: Email spam filtering. The system is trained with many email messages along with information whether each email is spam or not. Then, it learns to classify new emails.
+##### Acceptance Criteria:
+1. A new class, `OneLakeSparkSessionExtension`, extending `SparkSessionExtensions` is created.
+2. The class is capable of injecting additional rules or behaviors into Spark sessions.
 
-#### b. Unsupervised Learning
-   - **Description**: The model works on unlabeled data. It tries to find patterns and relationships directly from the input data.
-   - **Example**: Market segmentation. Grouping customers into clusters based on purchasing behavior without prior labeling.
+#### User Story 2: Implement Apply Method for Extension
+**As a** software developer,
+**I want to** implement the `apply` method in my custom extension,
+**So that** I can specify what customizations to inject into the Spark session.
 
-#### c. Reinforcement Learning
-   - **Description**: The model learns to make decisions by performing actions in an environment to achieve some rewards.
-   - **Example**: A robot learning to navigate a maze. It makes moves (actions) and gets rewards or penalties in return.
+##### Acceptance Criteria:
+1. The `apply` method in `OneLakeSparkSessionExtension` is overridden to inject specific behaviors.
+2. The method correctly injects `PostMergeRule` into the Spark session.
 
-### 3. Basic Terminology
+#### User Story 3: Initialize Spark Session with Custom Extension
+**As a** data engineer,
+**I want to** initialize a Spark session with the custom extension,
+**So that** I can leverage the customized behaviors in my data processing.
 
-#### a. Data Set
-   - A collection of data. In ML, it's usually divided into two or three parts: training data, validation data, and test data.
+##### Acceptance Criteria:
+1. The Spark session is initialized using `OneLakeSparkSessionExtension`.
+2. The session reflects the custom behaviors defined in the extension.
 
-#### b. Features
-   - These are individual independent variables that act as the input in your system. In simple terms, features are the columns in your dataset.
-   - **Example**: In a dataset of houses, features might include the number of bedrooms, house age, square footage, etc.
+### Post-Resolve Merge Logic Component
 
-#### c. Model
-   - A model in ML is a system that makes predictions or identifications based on data. It gets trained on a dataset and then can make predictions on new, unseen data.
+#### User Story 4: Develop PostMergeRule
+**As a** software developer,
+**I want to** develop the `PostMergeRule`,
+**So that** I can customize the handling of `MergeIntoTable` commands in the logical plan.
 
-#### d. Algorithm
-   - A machine learning algorithm is a procedure or formula for solving a problem, based on conducting a sequence of specified actions.
-   - **Example**: Linear Regression, Decision Trees, Neural Networks.
+##### Acceptance Criteria:
+1. `PostMergeRule` is defined and extends `Rule[LogicalPlan]`.
+2. The rule includes logic to identify and process `MergeIntoTable` commands.
 
-#### e. Training
-   - The process of teaching a model to make predictions or decisions, usually by feeding it a dataset.
+#### User Story 5: Integrate Governance Checks
+**As a** data engineer,
+**I want to** integrate governance checks in the `PostMergeRule`,
+**So that** I can ensure data quality, schema validation, and tokenization in the merge process.
 
-#### f. Overfitting and Underfitting
-   - Overfitting: When a model is too complex and learns the noise and details in the training data to the extent that it negatively impacts the performance on new data.
-   - Underfitting: When a model is too simple and can neither learn the training data nor generalize to new data.
+##### Acceptance Criteria:
+1. The rule includes logic to call a governance service and fetch metadata for tables published by SDK.
+2. The rule can swap standard `MergeIntoTable` commands with custom commands incorporating governance checks.
 
-### 4. An Example Project: House Price Prediction
+### Pre-Merge Logic Component
 
-Imagine you're building a model to predict house prices. You have a dataset with house features (size, number of bedrooms, location, etc.) and their corresponding prices.
+#### User Story 6: Implement Pre-Merge Logic
+**As a** data engineer,
+**I want to** implement logic to handle operations before the merge,
+**So that** I can prepare data for the merge process correctly.
 
-1. **Data Preprocessing**: Clean the data, handle missing values, and possibly create new features (like the age of the house).
+##### Acceptance Criteria:
+1. Logic to identify rows for insertion or update is implemented.
+2. The system generates a final DataFrame based on the merge logic but does not write it out immediately.
 
-2. **Choose a Model**: Suppose you choose a linear regression model for this task.
+### Post-Merge Logic Component
 
-3. **Training**: You train the model on a part of your dataset, where it learns to associate features of houses with their prices.
+#### User Story 7: Apply Governance Checks after Merge
+**As a** data engineer,
+**I want to** apply governance checks after the merge operation,
+**So that** I can ensure the final merged data adheres to our data governance policies.
 
-4. **Evaluation**: Validate your model on a different set of data to check its performance.
+##### Acceptance Criteria:
+1. The merge command is extended to allow the overriding of specific methods like `repartitionIfNeeded`.
+2. Post-merge governance checks (such as schema validation, data quality, tokenization) are applied to the final DataFrame.
 
-5. **Prediction**: Once trained and evaluated, you use this model to predict the prices of new houses based on their features.
+### Conclusion
+These user stories cover the key aspects of developing a Spark extension for Delta Merge operations with governance checks. Each story focuses on a specific component, ensuring a comprehensive development approach. The acceptance criteria provide clear goals and checkpoints for the successful completion of each story.
+
+############
+############
+############
+Creating a comprehensive test plan for end-to-end testing, integration, and performance testing for a project like this is essential to ensure the system's reliability and efficiency. Here are the test cases and scenarios that can be used:
+
+### End-to-End Testing
+
+#### Test Case 1: Spark Session Custom Extension Loading
+**Objective:** To verify that the custom Spark session extension is loaded correctly.
+- **Scenario:** Initialize a Spark session with the custom extension and verify that the extension is applied.
+- **Expected Result:** The Spark session initializes with `OneLakeSparkSessionExtension` without errors.
+
+#### Test Case 2: MergeInto Command Modification
+**Objective:** To ensure the custom `PostMergeRule` correctly modifies `MergeIntoTable` commands.
+- **Scenario:** Execute a Delta Merge command in a Spark session with the custom extension.
+- **Expected Result:** The `MergeIntoTable` command is modified according to the custom rule.
+
+#### Test Case 3: Governance Service Integration
+**Objective:** To test the integration with the governance service for SDK published tables.
+- **Scenario:** Run a merge operation on an SDK published Delta table.
+- **Expected Result:** The system successfully calls the governance service and applies received governance rules.
+
+#### Test Case 4: Fallback for Non-SDK Published Tables
+**Objective:** To confirm the system correctly falls back to standard behavior for non-SDK published tables.
+- **Scenario:** Run a merge operation on a non-SDK published Delta table.
+- **Expected Result:** The standard `MergeIntoTable` command is executed without custom modifications.
+
+#### Test Case 5: Complete Merge Operation
+**Objective:** To verify the entire merge operation, including pre-merge and post-merge logic.
+- **Scenario:** Perform a complete Delta Merge operation from start to finish.
+- **Expected Result:** The merge operation completes successfully, applying all custom and standard logic.
+
+### Integration Testing
+
+#### Test Case 1: Integration with Delta Lake
+**Objective:** To ensure seamless integration with Delta Lake.
+- **Scenario:** Perform various Delta Lake operations using the custom Spark session.
+- **Expected Result:** All Delta Lake operations execute correctly with the custom session.
+
+#### Test Case 2: Data Quality, Schema Validation, and Tokenization Checks
+**Objective:** To test the integration of data quality, schema validation, and tokenization checks.
+- **Scenario:** Run merge operations that trigger each type of governance check.
+- **Expected Result:** Each governance check is correctly applied, and data is processed accordingly.
+
+#### Test Case 3: Handling of Different Data Formats
+**Objective:** To verify the system's ability to handle various data formats.
+- **Scenario:** Use different data formats (e.g., Parquet, CSV) as input for merge operations.
+- **Expected Result:** The system handles all data formats correctly during the merge process.
+
+### Performance Testing
+
+#### Test Case 1: Merge Operation Performance
+**Objective:** To evaluate the performance of merge operations.
+- **Scenario:** Execute merge operations with varying sizes of datasets.
+- **Expected Result:** Merge operations complete within acceptable time frames and resource usage.
+
+#### Test Case 2: Scalability
+**Objective:** To test the system's scalability.
+- **Scenario:** Gradually increase the dataset size and complexity of the merge operations.
+- **Expected Result:** The system scales effectively without significant performance degradation.
+
+#### Test Case 3: Concurrency and Load Testing
+**Objective:** To ensure the system performs well under concurrent loads.
+- **Scenario:** Simulate concurrent merge operations in a multi-user environment.
+- **Expected Result:** The system maintains performance and data integrity under load.
 
 ### Conclusion
 
-Machine Learning is a vast field with a wide range of applications. Starting from the basics and progressively moving to more complex concepts and models is a good approach. The key to learning ML is hands-on practice: experimenting with datasets, trying different algorithms, and tweaking models to see how their performance changes. There are many online resources, courses, and tutorials that can also be helpful in your learning journey.
-
-Certainly! Here's a breakdown of the content for your three slides on using XGBoost for Time Series Classification. 
-
----
-
-### Slide 1: Features Generator for Time Series Classification
-
-#### Goal:
-To transform time series data into a feature matrix suitable for training an XGBoost model.
-
-#### Steps:
-1. **Time Series Decomposition**:
-   - Decompose each time series into trend, seasonality, and residual components.
-   - Use methods like STL (Seasonal and Trend decomposition using Loess) for this purpose.
-
-2. **Statistical Features**:
-   - Generate statistical features like mean, median, variance, skewness, and kurtosis over various time windows (e.g., 7-day, 30-day).
-
-3. **Lagged Features**:
-   - Create lagged features to capture past information (e.g., values from 1 day ago, 7 days ago).
-
-4. **Rolling Window Features**:
-   - Calculate rolling window statistics (e.g., rolling average, rolling standard deviation) over different time periods.
-
-5. **Domain-Specific Features**:
-   - Include any domain-specific features relevant to the time series (e.g., hour of day for hourly data, day of week for daily data).
-
-#### Key Point:
-Effective feature engineering is crucial as it directly influences the model's ability to learn from the time series data.
-
----
-
-### Slide 2: Train - XGBoost for Time Series Classification
-
-#### Goal:
-To train an XGBoost model using the prepared feature matrix for accurate time series classification.
-
-#### Steps:
-1. **Data Splitting**:
-   - Split the data into training and testing sets while maintaining the time order.
-
-2. **Model Initialization**:
-   - Initialize the XGBoost classifier with relevant hyperparameters (e.g., `max_depth`, `eta`, `num_class`).
-
-3. **Hyperparameter Tuning**:
-   - Use techniques like grid search or random search to find the optimal set of hyperparameters.
-
-4. **Model Training**:
-   - Train the XGBoost model on the training dataset.
-   - Use time-series cross-validation techniques to evaluate model performance during training.
-
-5. **Model Evaluation**:
-   - Evaluate the model using appropriate metrics like accuracy, F1-score, or AUC-ROC on the test set.
-
-#### Key Point:
-The accuracy of time series classification heavily relies on how well the model is trained and the relevance of the chosen hyperparameters.
-
----
-
-### Slide 3: Predict - Using Trained XGBoost Model
-
-#### Goal:
-To use the trained XGBoost model to make predictions on new, unseen time series data.
-
-#### Steps:
-1. **Data Preparation for Prediction**:
-   - Apply the same feature generation process to the new time series data.
-
-2. **Loading the Model**:
-   - Load the trained XGBoost model.
-
-3. **Making Predictions**:
-   - Use the model to predict the class labels for the new data.
-   - Handle the predictions as probabilities or hard class assignments, as needed.
-
-4. **Post-Processing Predictions**:
-   - Translate predictions into actionable insights (e.g., identifying trends, anomalies).
-
-5. **Model Updating**:
-   - Continuously monitor the model performance.
-   - Update or retrain the model with new data over time to maintain its accuracy.
-
-#### Key Point:
-The real test of the model's effectiveness is its performance on new, unseen data and its adaptability to changing data patterns.
-
----
-
-### Final Note:
-Each slide in your presentation focuses on a critical aspect of using XGBoost for time series classification. Ensure that your audience understands the importance of each step in the process, from feature generation to training and making predictions.
+This test plan covers a wide range of scenarios, from basic functionality and integration to comprehensive performance assessments. Each test case is designed to validate specific aspects of the system, ensuring that the final implementation is robust, efficient, and meets the project's requirements. Regular and thorough testing at each stage of development is crucial for the success of the project.
