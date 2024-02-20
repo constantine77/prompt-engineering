@@ -1,39 +1,57 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.types import *
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType
+import json
 
-# Initialize Spark Session
-spark = SparkSession.builder.appName("DeltaSchemaEvolution").getOrCreate()
+# Initialize SparkSession with Delta Lake support
+spark = SparkSession.builder \
+    .appName("Delta Schema Breaking Changes Detector") \
+    .config("spark.jars.packages", "io.delta:delta-core_2.12:1.0.0") \
+    .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension") \
+    .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog") \
+    .getOrCreate()
 
-# Define your schema versions here (assuming Spark StructType format for simplicity)
+# Define sample Avro schemas as JSON strings
+avro_schema_str_1 = '{"type":"record","name":"TestSchema1","fields":[{"name":"id","type":"int"},{"name":"name","type":"string"}]}'
+avro_schema_str_2 = '{"type":"record","name":"TestSchema2","fields":[{"name":"id","type":"int"},{"name":"name","type":"string"},{"name":"age","type":"int"}]}'
+avro_schema_str_3 = '{"type":"record","name":"TestSchema3","fields":[{"name":"id","type":"int"},{"name":"name","type":"string"},{"name":"age","type":["int","null"]}]}'
+
+# Function to convert Avro schema string to Spark DataFrame schema
+def avro_to_spark_schema(avro_schema_str):
+    avro_schema = json.loads(avro_schema_str)
+    fields = avro_schema['fields']
+    spark_fields = []
+    for field in fields:
+        field_name = field['name']
+        field_type = field['type']
+        if field_type == "string":
+            spark_fields.append(StructField(field_name, StringType(), True))
+        elif field_type == "int":
+            spark_fields.append(StructField(field_name, IntegerType(), True))
+        # Add more type conversions as needed
+    return StructType(spark_fields)
+
+# Convert Avro schemas to Spark DataFrame schemas
 schema_versions = [
-    StructType([StructField("id", IntegerType(), True), StructField("name", StringType(), True)]),
-    StructType([StructField("id", IntegerType(), True), StructField("name", StringType(), True), StructField("email", StringType(), True)]),
-    StructType([StructField("id", IntegerType(), True), StructField("name", StringType(), True), StructField("email", StringType(), True), StructField("status", StringType(), True)])
+    avro_to_spark_schema(avro_schema_str_1),
+    avro_to_spark_schema(avro_schema_str_2),
+    avro_to_spark_schema(avro_schema_str_3)
 ]
 
-# Placeholder DataFrame for simulating data conforming to each schema version
-data = [(1, "name1", "email1", "status1"), (2, "name2", "email2", "status2")]
+# Sample data to apply schemas to
+data = [(1, "Alice", 30), (2, "Bob", 25), (3, "Charlie", 35)]
+df = spark.createDataFrame(data, ["id", "name", "age"])
 
+# Apply each schema to the Delta table and identify breaking changes
 breaking_changes = []
 
 for idx, schema in enumerate(schema_versions):
-    temp_table_name = f"temp_delta_table_{idx}"
-    df = spark.createDataFrame(data, schema=schema)
-    
+    # Temporarily change logic to simulate applying schema changes
     try:
-        # Create or overwrite temporary Delta table with the current schema
-        df.write.format("delta").mode("overwrite").saveAsTable(temp_table_name)
-        
-        # Read back to simulate access and query, this step could be more elaborate
-        df_temp = spark.read.table(temp_table_name)
-        
-        # Simulate schema evolution by reading with enforceSchema option (Delta feature)
-        # This is a simplification, actual enforcement would need data ingestion attempts
-        df_temp = spark.read.format("delta").option("mergeSchema", "true").table(temp_table_name)
-        
-        breaking_changes.append({"Schema Version": idx+1, "Breaking Change": False})
+        # Simulate applying schema changes by selecting columns based on the schema
+        temp_df = df.select([field.name for field in schema.fields])
+        breaking_changes.append({"Schema Version": idx + 1, "Breaking Change": False})
     except Exception as e:
-        breaking_changes.append({"Schema Version": idx+1, "Breaking Change": True, "Error": str(e)})
+        breaking_changes.append({"Schema Version": idx + 1, "Breaking Change": True, "Error": str(e)})
 
 # Convert results to DataFrame
 result_df = spark.createDataFrame(breaking_changes)
