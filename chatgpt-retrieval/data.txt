@@ -1,12 +1,25 @@
-from pyspark.sql.types import *
 import json
+import pyspark.sql.functions as F
 from pyspark.sql import SparkSession
+from pyspark.sql.types import *
 
-# Initialize Spark Session (Databricks environment should already have this set up)
+# Initialize Spark Session - typically already initialized in Databricks notebooks
 spark = SparkSession.builder.appName("Delta Schema Evolution").getOrCreate()
 
-# Step 1: Define Avro Schemas
-avro_schema_v1 = """
+# Utility function to convert JSON schema to Spark DataFrame schema
+def json_to_spark_schema(json_schema):
+    return StructType.fromJson(json_schema)
+
+# Safely load JSON schema from string
+def load_json_schema(schema_str):
+    try:
+        return json.loads(schema_str)
+    except json.JSONDecodeError as e:
+        print(f"Failed to decode JSON: {e}")
+        return None
+
+# Example Avro schema strings for different versions
+avro_schema_v1_str = """
 {
   "type": "record",
   "name": "User",
@@ -17,7 +30,7 @@ avro_schema_v1 = """
 }
 """
 
-avro_schema_v2 = """
+avro_schema_v2_str = """
 {
   "type": "record",
   "name": "User",
@@ -29,65 +42,49 @@ avro_schema_v2 = """
 }
 """
 
-avro_schema_v3 = """
+avro_schema_v3_str = """
 {
   "type": "record",
   "name": "User",
   "fields": [
     {"name": "id", "type": "int"},
     {"name": "name", "type": "string"},
-    {"name": "email", "type": "string"},  # Breaking change: non-nullable without default
-    {"name": "active", "type": "boolean", "default": true}
+    {"name": "email", "type": ["null", "string"], "default": null},
+    {"name": "age", "type": ["null", "int"], "default": null}
   ]
 }
 """
 
-# Step 2: Convert Avro Schemas to Spark Schemas Function
-def avro_schema_to_spark_schema(avro_schema_str):
-    avro_schema = json.loads(avro_schema_str)
-    fields = avro_schema["fields"]
-    spark_fields = []
-    for field in fields:
-        field_name = field["name"]
-        field_type = field["type"]
-        nullable = True
-        if isinstance(field_type, list):
-            field_type = [ftype for ftype in field_type if ftype != "null"][0]
-            nullable = True
-        elif isinstance(field_type, str) and field_type != "null":
-            nullable = False
-        else:
-            raise ValueError("Complex types or unsupported types encountered.")
-        
-        if field_type == "string":
-            spark_type = StringType()
-        elif field_type == "int":
-            spark_type = IntegerType()
-        elif field_type == "boolean":
-            spark_type = BooleanType()
-        else:
-            raise ValueError(f"Unsupported Avro type: {field_type}")
-        
-        spark_fields.append(StructField(field_name, spark_type, nullable))
-    
-    return StructType(spark_fields)
+# Load and convert Avro schemas to Spark schemas
+avro_schemas = [avro_schema_v1_str, avro_schema_v2_str, avro_schema_v3_str]
+spark_schemas = [json_to_spark_schema(load_json_schema(schema_str)) for schema_str in avro_schemas]
 
-# Convert Avro schemas to Spark schemas
-spark_schema_v1 = avro_schema_to_spark_schema(avro_schema_v1)
-spark_schema_v2 = avro_schema_to_spark_schema(avro_schema_v2)
-spark_schema_v3 = avro_schema_to_spark_schema(avro_schema_v3)
+# Temporary Delta table path
+delta_table_path = "/tmp/delta/users"
 
-# Step 3: Apply Schemas to Temporary Delta Table and Identify Breaking Changes
-temp_table_path = "/tmp/delta/temp_table_breaking_changes"
-schema_versions = [spark_schema_v1, spark_schema_v2, spark_schema_v3]
+# Create a DataFrame for the initial schema and write it as a Delta table
+df = spark.createDataFrame([], schema=spark_schemas[0])
+df.write.format("delta").save(delta_table_path)
 
-for i, schema in enumerate(schema_versions, start=1):
-    df = spark.createDataFrame([], schema)
+# Function to apply schema changes and capture breaking changes
+def apply_schema_changes_and_test(delta_table_path, new_schema):
+    # Try to apply the new schema by reading the existing Delta table and enforcing the new schema
     try:
-        df.write.format("delta").mode("append").save(temp_table_path)
-        print(f"Schema version {i} applied successfully.")
+        df = spark.read.format("delta").option("mergeSchema", "true").schema(new_schema).load(delta_table_path)
+        print("Schema applied successfully, no breaking changes detected.")
+        return False  # No breaking changes
     except Exception as e:
-        print(f"Schema version {i} failed with error: {e}")
+        print(f"Failed to apply schema, breaking change detected: {e}")
+        return True  # Breaking change detected
 
-# Step 4: Cleanup (Optional)
-dbutils.fs.rm(temp_table_path, recurse=True)
+# Iterate over the schema versions and test each
+for i, schema in enumerate(spark_schemas[1:], start=2):  # Start from the second schema version
+    print(f"Testing schema version {i}")
+    breaking_change_detected = apply_schema_changes_and_test(delta_table_path, schema)
+    if breaking_change_detected:
+        print(f"Breaking change detected in schema version {i}.")
+    else:
+        print(f"No breaking change detected in schema version {i}.")
+
+# Note: This script is a basic demonstration. The actual detection of breaking changes
+# might require more sophisticated handling based on specific requirements.
