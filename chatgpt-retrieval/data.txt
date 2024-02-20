@@ -1,0 +1,93 @@
+from pyspark.sql.types import *
+import json
+from pyspark.sql import SparkSession
+
+# Initialize Spark Session (Databricks environment should already have this set up)
+spark = SparkSession.builder.appName("Delta Schema Evolution").getOrCreate()
+
+# Step 1: Define Avro Schemas
+avro_schema_v1 = """
+{
+  "type": "record",
+  "name": "User",
+  "fields": [
+    {"name": "id", "type": "int"},
+    {"name": "name", "type": "string"}
+  ]
+}
+"""
+
+avro_schema_v2 = """
+{
+  "type": "record",
+  "name": "User",
+  "fields": [
+    {"name": "id", "type": "int"},
+    {"name": "name", "type": "string"},
+    {"name": "email", "type": ["null", "string"], "default": null}
+  ]
+}
+"""
+
+avro_schema_v3 = """
+{
+  "type": "record",
+  "name": "User",
+  "fields": [
+    {"name": "id", "type": "int"},
+    {"name": "name", "type": "string"},
+    {"name": "email", "type": "string"},  # Breaking change: non-nullable without default
+    {"name": "active", "type": "boolean", "default": true}
+  ]
+}
+"""
+
+# Step 2: Convert Avro Schemas to Spark Schemas Function
+def avro_schema_to_spark_schema(avro_schema_str):
+    avro_schema = json.loads(avro_schema_str)
+    fields = avro_schema["fields"]
+    spark_fields = []
+    for field in fields:
+        field_name = field["name"]
+        field_type = field["type"]
+        nullable = True
+        if isinstance(field_type, list):
+            field_type = [ftype for ftype in field_type if ftype != "null"][0]
+            nullable = True
+        elif isinstance(field_type, str) and field_type != "null":
+            nullable = False
+        else:
+            raise ValueError("Complex types or unsupported types encountered.")
+        
+        if field_type == "string":
+            spark_type = StringType()
+        elif field_type == "int":
+            spark_type = IntegerType()
+        elif field_type == "boolean":
+            spark_type = BooleanType()
+        else:
+            raise ValueError(f"Unsupported Avro type: {field_type}")
+        
+        spark_fields.append(StructField(field_name, spark_type, nullable))
+    
+    return StructType(spark_fields)
+
+# Convert Avro schemas to Spark schemas
+spark_schema_v1 = avro_schema_to_spark_schema(avro_schema_v1)
+spark_schema_v2 = avro_schema_to_spark_schema(avro_schema_v2)
+spark_schema_v3 = avro_schema_to_spark_schema(avro_schema_v3)
+
+# Step 3: Apply Schemas to Temporary Delta Table and Identify Breaking Changes
+temp_table_path = "/tmp/delta/temp_table_breaking_changes"
+schema_versions = [spark_schema_v1, spark_schema_v2, spark_schema_v3]
+
+for i, schema in enumerate(schema_versions, start=1):
+    df = spark.createDataFrame([], schema)
+    try:
+        df.write.format("delta").mode("append").save(temp_table_path)
+        print(f"Schema version {i} applied successfully.")
+    except Exception as e:
+        print(f"Schema version {i} failed with error: {e}")
+
+# Step 4: Cleanup (Optional)
+dbutils.fs.rm(temp_table_path, recurse=True)
