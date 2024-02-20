@@ -1,90 +1,62 @@
 import json
-import pyspark.sql.functions as F
-from pyspark.sql import SparkSession
+from pyspark.sql.session import SparkSession
 from pyspark.sql.types import *
+from pyspark.sql.functions import lit
 
-# Initialize Spark Session - typically already initialized in Databricks notebooks
-spark = SparkSession.builder.appName("Delta Schema Evolution").getOrCreate()
+# Initialize Spark Session
+spark = SparkSession.builder.appName("DeltaSchemaEvolution").getOrCreate()
 
-# Utility function to convert JSON schema to Spark DataFrame schema
+# Sample Avro schema strings
+avro_schema_v1_str = '{"type":"record","name":"MyRecord","fields":[{"name":"id","type":"int"},{"name":"name","type":"string"}]}'
+avro_schema_v2_str = '{"type":"record","name":"MyRecord","fields":[{"name":"id","type":"int"},{"name":"name","type":"string"},{"name":"email","type":["null","string"]}]}'
+avro_schema_v3_str = '{"type":"record","name":"MyRecord","fields":[{"name":"id","type":"int"},{"name":"name","type":"string"},{"name":"email","type":["null","string"]},{"name":"status","type":"string"}]}'
+
+# Function to load JSON schema and convert it to Spark DataFrame schema
+def load_json_schema(avro_schema_str):
+    return json.loads(avro_schema_str)
+
+# Mapping function from Avro to Spark data types
+def avro_type_to_spark_type(avro_type):
+    type_mappings = {
+        "int": IntegerType(),
+        "string": StringType(),
+        "long": LongType(),
+        "double": DoubleType(),
+        "float": FloatType(),
+        "boolean": BooleanType(),
+        "bytes": BinaryType(),
+        # Add more mappings as needed
+    }
+    return type_mappings.get(avro_type, StringType())  # Default to StringType if unknown
+
+# Function to convert JSON schema (representing Avro schema) to Spark DataFrame schema
 def json_to_spark_schema(json_schema):
-    return StructType.fromJson(json_schema)
+    fields = []
+    for field in json_schema.get('fields', []):
+        if isinstance(field['type'], list):  # Nullable types
+            spark_type = avro_type_to_spark_type(field['type'][1])  # Assuming second type is the non-null type
+        else:
+            spark_type = avro_type_to_spark_type(field['type'])
+        fields.append(StructField(field['name'], spark_type, True))
+    return StructType(fields)
 
-# Safely load JSON schema from string
-def load_json_schema(schema_str):
-    try:
-        return json.loads(schema_str)
-    except json.JSONDecodeError as e:
-        print(f"Failed to decode JSON: {e}")
-        return None
+# Assuming avro_schema_v1_str, avro_schema_v2_str, and avro_schema_v3_str are defined as above
+avro_schemas_str = [avro_schema_v1_str, avro_schema_v2_str, avro_schema_v3_str]
 
-# Example Avro schema strings for different versions
-avro_schema_v1_str = """
-{
-  "type": "record",
-  "name": "User",
-  "fields": [
-    {"name": "id", "type": "int"},
-    {"name": "name", "type": "string"}
-  ]
-}
-"""
+# Convert Avro schemas to Spark schemas
+spark_schemas = [json_to_spark_schema(load_json_schema(schema_str)) for schema_str in avro_schemas_str]
 
-avro_schema_v2_str = """
-{
-  "type": "record",
-  "name": "User",
-  "fields": [
-    {"name": "id", "type": "int"},
-    {"name": "name", "type": "string"},
-    {"name": "email", "type": ["null", "string"], "default": null}
-  ]
-}
-"""
-
-avro_schema_v3_str = """
-{
-  "type": "record",
-  "name": "User",
-  "fields": [
-    {"name": "id", "type": "int"},
-    {"name": "name", "type": "string"},
-    {"name": "email", "type": ["null", "string"], "default": null},
-    {"name": "age", "type": ["null", "int"], "default": null}
-  ]
-}
-"""
-
-# Load and convert Avro schemas to Spark schemas
-avro_schemas = [avro_schema_v1_str, avro_schema_v2_str, avro_schema_v3_str]
-spark_schemas = [json_to_spark_schema(load_json_schema(schema_str)) for schema_str in avro_schemas]
-
-# Temporary Delta table path
-delta_table_path = "/tmp/delta/users"
-
-# Create a DataFrame for the initial schema and write it as a Delta table
-df = spark.createDataFrame([], schema=spark_schemas[0])
-df.write.format("delta").save(delta_table_path)
-
-# Function to apply schema changes and capture breaking changes
-def apply_schema_changes_and_test(delta_table_path, new_schema):
-    # Try to apply the new schema by reading the existing Delta table and enforcing the new schema
-    try:
-        df = spark.read.format("delta").option("mergeSchema", "true").schema(new_schema).load(delta_table_path)
-        print("Schema applied successfully, no breaking changes detected.")
-        return False  # No breaking changes
-    except Exception as e:
-        print(f"Failed to apply schema, breaking change detected: {e}")
-        return True  # Breaking change detected
-
-# Iterate over the schema versions and test each
-for i, schema in enumerate(spark_schemas[1:], start=2):  # Start from the second schema version
-    print(f"Testing schema version {i}")
-    breaking_change_detected = apply_schema_changes_and_test(delta_table_path, schema)
-    if breaking_change_detected:
-        print(f"Breaking change detected in schema version {i}.")
+# Create a temporary Delta table and apply schema changes to identify breaking changes
+temp_table_name = "temp_delta_table"
+for idx, spark_schema in enumerate(spark_schemas):
+    df = spark.createDataFrame([], schema=spark_schema)
+    df = df.withColumn("schema_version", lit(idx+1))  # Adding schema version for tracking
+    if idx == 0:
+        df.write.format("delta").mode("overwrite").saveAsTable(temp_table_name)
     else:
-        print(f"No breaking change detected in schema version {i}.")
+        df.write.format("delta").mode("append").saveAsTable(temp_table_name)
 
-# Note: This script is a basic demonstration. The actual detection of breaking changes
-# might require more sophisticated handling based on specific requirements.
+    print(f"Applied schema version {idx+1} to the temporary Delta table.")
+
+# Assuming this is a simplified example. In practice, you would use the Delta table's history
+# to identify if any schema evolution caused incompatibilities or breaking changes.
