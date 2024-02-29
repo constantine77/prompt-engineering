@@ -160,3 +160,84 @@ if response.status_code == 200:
 else:
     print("Failed to generate text. Status Code:", response.status_code)
 
+##############################
+##############################
+##############################
+implement solution to identify schema drifts breaking changes for parquet and avro files, just extract the schema and ensure compatibility without actually reading the entire file. 
+
+Implementing a solution to identify schema drifts and ensure compatibility for Parquet and Avro files involves extracting the schema from these files and comparing them to identify any breaking changes. This process can be achieved without reading the entire file by utilizing metadata and schema information. Here are the implementation steps with Python examples:
+
+### Step 1: Install Required Libraries
+
+You'll need `pyarrow` for Parquet files and `fastavro` for Avro files. Install them using pip:
+
+```bash
+pip install pyarrow fastavro
+```
+
+### Step 2: Extract Schema from Parquet File
+
+Use `pyarrow` to read the schema from a Parquet file.
+
+```python
+import pyarrow.parquet as pq
+
+def extract_parquet_schema(parquet_file_path):
+    parquet_file = pq.ParquetFile(parquet_file_path)
+    schema = parquet_file.schema
+    return schema.to_arrow_schema().to_string(remove_metadata=True)
+
+# Example usage
+parquet_schema = extract_parquet_schema('example.parquet')
+print(parquet_schema)
+```
+
+### Step 3: Extract Schema from Avro File
+
+Use `fastavro` to read the schema from an Avro file.
+
+```python
+import fastavro
+
+def extract_avro_schema(avro_file_path):
+    with open(avro_file_path, 'rb') as avro_file:
+        reader = fastavro.reader(avro_file)
+        schema = reader.writer_schema
+    return schema
+
+# Example usage
+avro_schema = extract_avro_schema('example.avro')
+print(avro_schema)
+```
+
+### Step 4: Compare Schemas for Compatibility
+
+This step involves defining logic to compare two schemas (either Parquet or Avro) to identify any breaking changes. Breaking changes might include type changes, column removals, etc.
+
+```python
+def compare_schemas(schema1, schema2):
+    # This is a simplified example. You'll need to define comprehensive logic
+    # based on how you decide compatibility and breaking changes.
+    breaking_changes = []
+    for field in schema1:
+        if field not in schema2:
+            breaking_changes.append(f"Field missing in the second schema: {field}")
+    return breaking_changes
+
+# Assuming schema1 and schema2 are extracted and formatted as dictionaries or similar structures
+# that can be compared. The actual comparison logic will depend on the complexity of your schemas
+# and needs.
+```
+
+### Step 5: Ensure Compatibility
+
+After identifying breaking changes, decide on the next steps for handling them. This might involve updating schemas or transforming data to fit the new schema.
+
+### Additional Considerations
+
+- **Automating Schema Comparison**: Depending on your environment, you may automate the extraction and comparison of schemas from files as part of a CI/CD pipeline, data validation process, or within a data ingestion workflow.
+- **Schema Evolution Strategies**: For systems that support schema evolution (like Avro), ensure that your comparison logic accounts for compatible changes (e.g., adding optional fields).
+- **Comprehensive Comparison Logic**: The comparison logic should be thorough, considering not just field names but also types, nested structures, and other schema properties.
+
+This approach provides a foundational framework for identifying schema drifts and ensuring compatibility without the need to read entire files, focusing instead on schema metadata.
+
