@@ -1,50 +1,47 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType
-from pyspark.sql.functions import lit
+from pyspark.sql.types import StructType
+import json
 
-spark = SparkSession.builder.appName("DeltaSchemaMergeTest").getOrCreate()
+# Initialize Spark Session
+spark = SparkSession.builder.appName("DeltaSchemaMerge").getOrCreate()
 
-# Mock schema as per scenarios
-original_schema = StructType([
-    StructField("id", IntegerType(), True),
-    StructField("field1", StringType(), True)
-])
+# Function to convert JSON string to StructType
+def json_to_struct(json_str):
+    return StructType.fromJson(json.loads(json_str))
 
-# Scenario A: Existing Field Name Change
-name_change_schema = StructType([
-    StructField("id", IntegerType(), True),
-    StructField("field2", StringType(), True)
-])
+# Mock Avro schemas as JSON strings for each scenario
+original_schema_str = '{"type":"record","name":"BaseRecord","fields":[{"name":"id","type":"int"},{"name":"field1","type":"string","default":"default_value"}]}'
+name_change_schema_str = '{"type":"record","name":"NameChangeRecord","fields":[{"name":"id","type":"int"},{"name":"field2","type":"string","default":"default_value"}]}'
+type_change_schema_str = '{"type":"record","name":"TypeChangeRecord","fields":[{"name":"id","type":"string"},{"name":"field1","type":"string","default":"default_value"}]}'
+default_value_change_schema_str = '{"type":"record","name":"DefaultValueChangeRecord","fields":[{"name":"id","type":"int"},{"name":"field1","type":"string","default":"new_default_value"}]}'
 
-# Scenario B: Existing Field Data Type Change
-type_change_schema = StructType([
-    StructField("id", StringType(), True),  # Changed datatype from IntegerType to StringType
-    StructField("field1", StringType(), True)
-])
+# Convert JSON schemas to Spark DataFrame schemas
+original_schema = json_to_struct(original_schema_str)
+name_change_schema = json_to_struct(name_change_schema_str)
+type_change_schema = json_to_struct(type_change_schema_str)
+default_value_change_schema = json_to_struct(default_value_change_schema_str)
 
-# Scenario C: Existing Field Default Value Change
-# Note: Spark schema does not track default values; this scenario is not applicable in Spark as it does not affect schema compatibility.
+# Base DataFrame matching the original schema
+df_base = spark.createDataFrame([], schema=original_schema)
 
-# Function to write DataFrames with different schemas to Delta table using mergeSchema option
-def write_with_merge_schema(df, path, scenario_description):
+# Define the Delta table path
+delta_path = "dbfs:/mnt/delta/base_table"
+
+# Write the base DataFrame to Delta
+df_base.write.format("delta").mode("overwrite").save(delta_path)
+
+# Function to try merging schema with the Delta table
+def try_merge_schema(delta_path, modified_schema, scenario):
+    df_modified = spark.createDataFrame([], schema=modified_schema)
+    
     try:
-        df.write.format("delta").mode("append").option("mergeSchema", "true").save(path)
-        print(f"{scenario_description}: Success, no breaking change detected.")
+        # Attempt to merge schema with existing Delta table
+        df_modified.write.format("delta").mode("append").option("mergeSchema", "true").save(delta_path)
+        print(f"{scenario}: Schema merge successful, no breaking change detected.")
     except Exception as e:
-        print(f"{scenario_description}: Failed, breaking change detected. Error: {str(e)}")
+        print(f"{scenario}: Schema merge failed, breaking change detected. Error: {str(e)}")
 
-# Directory path for the Delta table
-delta_table_path = "/delta/table/path"
-
-# Initialize base DataFrame and write to Delta format
-df_base = spark.createDataFrame([], original_schema)
-df_base.write.format("delta").mode("overwrite").save(delta_table_path)
-
-# Create DataFrame for each scenario
-df_name_change = spark.createDataFrame([], name_change_schema)
-df_type_change = spark.createDataFrame([], type_change_schema)
-
-# Apply each schema to the delta table and identify breaking changes
-write_with_merge_schema(df_base, delta_table_path, "Base Schema")
-write_with_merge_schema(df_name_change, delta_table_path, "Field Name Change")
-write_with_merge_schema(df_type_change, delta_table_path, "Field Data Type Change")
+# Attempt to merge schemas for each scenario
+try_merge_schema(delta_path, name_change_schema, "Field Name Change")
+try_merge_schema(delta_path, type_change_schema, "Field Data Type Change")
+try_merge_schema(delta_path, default_value_change_schema, "Field Default Value Change")
