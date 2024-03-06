@@ -1,0 +1,50 @@
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType
+from pyspark.sql.functions import lit
+
+spark = SparkSession.builder.appName("DeltaSchemaMergeTest").getOrCreate()
+
+# Mock schema as per scenarios
+original_schema = StructType([
+    StructField("id", IntegerType(), True),
+    StructField("field1", StringType(), True)
+])
+
+# Scenario A: Existing Field Name Change
+name_change_schema = StructType([
+    StructField("id", IntegerType(), True),
+    StructField("field2", StringType(), True)
+])
+
+# Scenario B: Existing Field Data Type Change
+type_change_schema = StructType([
+    StructField("id", StringType(), True),  # Changed datatype from IntegerType to StringType
+    StructField("field1", StringType(), True)
+])
+
+# Scenario C: Existing Field Default Value Change
+# Note: Spark schema does not track default values; this scenario is not applicable in Spark as it does not affect schema compatibility.
+
+# Function to write DataFrames with different schemas to Delta table using mergeSchema option
+def write_with_merge_schema(df, path, scenario_description):
+    try:
+        df.write.format("delta").mode("append").option("mergeSchema", "true").save(path)
+        print(f"{scenario_description}: Success, no breaking change detected.")
+    except Exception as e:
+        print(f"{scenario_description}: Failed, breaking change detected. Error: {str(e)}")
+
+# Directory path for the Delta table
+delta_table_path = "/delta/table/path"
+
+# Initialize base DataFrame and write to Delta format
+df_base = spark.createDataFrame([], original_schema)
+df_base.write.format("delta").mode("overwrite").save(delta_table_path)
+
+# Create DataFrame for each scenario
+df_name_change = spark.createDataFrame([], name_change_schema)
+df_type_change = spark.createDataFrame([], type_change_schema)
+
+# Apply each schema to the delta table and identify breaking changes
+write_with_merge_schema(df_base, delta_table_path, "Base Schema")
+write_with_merge_schema(df_name_change, delta_table_path, "Field Name Change")
+write_with_merge_schema(df_type_change, delta_table_path, "Field Data Type Change")
