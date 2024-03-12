@@ -1,0 +1,64 @@
+LlaMA 2 model is pretrained and fine-tuned with 2 Trillion tokens and 7 to 70 Billion parameters which makes it one of the powerful open source models. It is a highly improvement over LlaMA 1 model.
+
+What is a Retrieval Augmented Generation (RAG) system?¶
+Large Language Models (LLMs) has proven their ability to understand context and provide accurate answers to various NLP tasks, including summarization, Q&A, when prompted. While being able to provide very good answers to questions about information that they were trained with, they tend to hallucinate when the topic is about information that they do "not know", i.e. was not included in their training data. Retrieval Augmented Generation combines external resources with LLMs. The main two components of a RAG are therefore a retriever and a generator.
+The retriever part can be described as a system that is able to encode our data so that can be easily retrieved the relevant parts of it upon queriying it. The encoding is done using text embeddings, i.e. a model trained to create a vector representation of the information. The best option for implementing a retriever is a vector database. As vector database, there are multiple options, both open source or commercial products. Few examples are ChromaDB, Mevius, FAISS, Pinecone, Weaviate. Our option in this Notebook will be a local instance of ChromaDB (persistent).
+For the generator part, the obvious option is a LLM. In this Notebook we will use a quantized LLaMA v2 model, from the Kaggle Models collection.
+The orchestration of the retriever and generator will be done using Langchain. A specialized function from Langchain allows us to create the receiver-generator in one line of code.
+
+https://pub.towardsai.net/a-complete-guide-to-rag-and-llamaindex-2e1776655bfa
+https://www.kaggle.com/code/gpreda/rag-using-llama-2-langchain-and-chromadb
+https://docs.vultr.com/implementing-rag-with-chroma-and-llama-2-generative-ai-series
+https://agi-sphere.com/retrieval-augmented-generation-llama2/
+https://www.toolify.ai/ai-news/enhancing-generative-ai-with-rag-chroma-and-llama-2-1424623
+https://medium.com/@dmitri.mahayana/training-your-own-dataset-in-llama2-using-rag-langchain-e4991064f423
+
+https://github.com/BastinFlorian/RAG-Chatbot-with-Confluence
+
+https://medium.com/@srinivasjay/leveraging-retrieval-augmented-generation-and-embeddings-for-advanced-document-search-f0ee1274ffff
+
+https://github.com/BastinFlorian/RAG-Chatbot-with-Confluence
+
+https://mkonda007.medium.com/developing-llm-based-applications-implementing-a-rag-based-private-data-bot-4-n-656991cff925
+
+https://mkonda007.medium.com/developing-llm-based-application-llama-2-powered-summariser-app-3-n-a1937ed30c25
+
+https://medium.com/@vikrambhat2/building-a-rag-system-and-conversational-chatbot-with-custom-data-793e9617a865
+
+Architecture:
+https://community.cisco.com/t5/security-blogs/generative-ai-retrieval-augmented-generation-rag-and-langchain/ba-p/4933714
+
+Proposal: We propose "Insights," a cutting-edge solution powered by Retrieval-Augmented Generation (RAG) technology. Insights aim to streamline the integration of comprehensive information about company projects, solutions, and platforms. Utilizing data mined from GitHub and Confluence, this tool provides instant access to a wealth of existing knowledge, offering real-time insights and facilitating seamless knowledge sharing across the organization. By incorporating RAG, Insights bypass the limitations of traditional fine-tuning methods, enabling more factual, consistent, and up-to-date responses directly from the source.
+Benefits:
+• Factual Responses: Leverages the RAG model's ability to generate responses based on actual data, significantly reducing the risk of disseminating incorrect or misleading information.
+• Enhanced Consistency: Ensures uniformity in responses, fostering a reliable source of information.
+• Cost Efficiency: Offers a more economical solution than fine-tuning, as updates require only database modifications, not comprehensive model retraining.
+• Current and Relevant: Guarantees that responses reflect the most current data, keeping insights relevant and timely.
+• Source Accessibility: Provides users with access to original sources for verification, positioning the LLM as a knowledgeable assistant rather than the sole authority.
+Comparison of RAG and Fine-Tuning:
+• Cost: RAG presents a cost-effective alternative to fine-tuning, eliminating the need for extensive training on large LLMs.
+• Performance: While both approaches can achieve high performance, RAG is designed for efficiency and accuracy, with less effort required for optimization.
+• Hallucination Control: RAG offers greater control over the accuracy of context information, reducing the likelihood of generating inaccurate content.
+• Transparency: RAG maintains the integrity of the original LLM, enhancing transparency by modifying only the prompts and not the model itself, thereby ensuring that new information is seamlessly integrated.
+"Insights" revolutionizes how organizations access and leverage their internal knowledge. By implementing RAG technology, we not only optimize knowledge discovery and expert identification but also significantly enhance operational efficiency, saving time and resources while minimizing the potential for data redundancy and misinformation.
+
+Benefits of using RAG:
+The benefits of using Retrieval Augmented Generation (RAG) are
+• More factual responses: LLM’s responses are based on the provided information. The model is less likely to “hallucinate” incorrect or misleading information.
+• Consistency: More likely to get the same answer from the same question.
+• Cost: Building an RAG pipeline is less expensive than fine-tuning. You only need to update the database instead of training a new model when updating the information.
+• Currency: Ensure the LLM’s responses are based on up-to-date data.
+• Accessible source: Users can have access to the source for cross-checking. The LLM acts as a helper while referencing the source as the truth.
+
+Retrieval-augmented generation vs fine-tuning:
+RAG and fine-tuning are the two most popular ways to incorporate new incorporation in LLMs. Both require additional data but they are used differently.
+Fine-tuning performs additional training with the new data. You will get a new LLM model that captures your data. You will then use the new model to replace it with the old one.
+In contrast, RAG does not require changing the model. It incorporates the new data in the prompt.
+Cost
+RAG is cheaper than fine-tuning. Fine-tuning requires training an LLM, which is typically large.
+Performance
+Both can achieve good performance. In general, fine-tuning requires more work to get there.
+Hallucination
+Both have the chance to hallucinate (giving inaccurate information). RAG has more control on hallucination by providing more accurate context information.
+Transparency
+RAG is a more transparent approach. You keep the LLM fixed and unmodified. The ability to respond with new information is controlled by the quality of retrieval and how well the prompt is constructed.
