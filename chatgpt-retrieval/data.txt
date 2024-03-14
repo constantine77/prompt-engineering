@@ -1,0 +1,149 @@
+What is RAG?
+RAG, or Retrieval-augmented Generation, is an AI framework to improve the responses of Large Language Models (LLMs). RAG helps LLMs give better answers by using both their own knowledge and external information sources.
+You typically use a generic LLM, such as Llama and GPT, with RAG.
+In the retrieval phase, an algorithm finds relevant information based on the user’s question. The source can be public information like the internet or a set of private documents.
+In the generation phase, the LLM uses both the retrieved information and its own knowledge to form an answer. It can also provide source links for transparency.
+Benefits of using RAG
+The benefits of using Retrieval Augmented Generation (RAG) are
+• More factual responses: LLM’s responses are based on the provided information. The model is less likely to “hallucinate” incorrect or misleading information.
+• Consistency: More likely to get the same answer from the same question.
+• Cost: Building an RAG pipeline is less expensive than fine-tuning. You only need to update the database instead of training a new model when updating the information.
+• Currency: Ensure the LLM’s responses are based on up-to-date data.
+• Accessible source: Users can have access to the source for cross-checking. The LLM acts as a helper while referencing the source as the truth.
+
+Retrieval-augmented generation vs fine-tuning
+RAG and fine-tuning are the two most popular ways to incorporate new incorporation in LLMs. Both require additional data but they are used differently.
+Fine-tuning performs additional training with the new data. You will get a new LLM model that captures your data. You will then use the new model to replace it with the old one.
+In contrast, RAG does not require changing the model. It incorporates the new data in the prompt.
+Cost
+RAG is cheaper than fine-tuning. Fine-tuning requires training an LLM, which is typically large.
+Performance
+Both can achieve good performance. In general, fine-tuning requires more work to get there.
+Hallucination
+Both have the chance to hallucinate (giving inaccurate information). RAG has more control on hallucination by providing more accurate context information.
+Transparency
+RAG is a more transparent approach. You keep the LLM fixed and unmodified. The ability to respond with new information is controlled by the quality of retrieval and how well the prompt is constructed.
+Comparing the fine-tuning, RAG is more transparent and is easier to debug.
+How does RAG work?
+You can use an RAG workflow to let an LLM answer questions based on documents the model has not seen before.
+In this RAG workflow, documents are first broken down into chunks of sentences. They are then transformed into embeddings (a bunch of numbers) using a sentence transformer model. Those embeddings are then stored in a vector database with indexing for fast search and retrieval.
+The RAG pipeline is implemented using the LangChain RetrievalQA. It uses the similarity search to search the question against the database. The matching sentences and the question are used as the input to the Llama 2 Chat LLM.
+That’s why the LLM can answer questions based on the document: RAG uses vector search to find relevant sentences and includes them in the prompt!
+Note that there are many ways to implement RAG. Using vector database is just one of the options.
+
+
+
+
+
+
+Retrieval Augmented Generation (RAG) is essential for enhancing large language models (LLMs) in app development. It supplements LLMs with external data sources, helping arrive at more relevant responses by reducing errors or hallucinations. RAG determines what info is relevant to the user’s query through semantic search, which searches data by meaning (rather than just looking for literal matches of search terms). RAG is particularly effective for LLM apps that need to access domain-specific or proprietary data.
+However, RAG alone isn’t always enough to build powerful, context-aware LLM apps. Enhancing RAG with time-aware retrieval, which finds semantically relevant vectors within specific time and date ranges, can significantly improve its effectiveness.
+
+Key Features:
+
+PDF Content Processing: When users upload PDF files, the notebook extracts the text, segments it into manageable chunks, and indexes these chunks in in a vector db locally using HuggingFaceEmbeddings and FAISS.
+Data-Driven Query Handling: Users can pose questions to the chatbot, which searches the indexed data for relevant answers.
+Integrating Vector Database and LLMs: We leverage langchain’s capabilities to link vector database indexing with llama-2 LLMs, enabling a seamless conversational experience with memory and retrieval functionalities.
+Hallucination Check: Mechanism to detect and correct any hallucinations or inaccuracies in the LLM’s responses.
+Conversational UI: Chatbot UI to
+
+
+
+Tech Stack
+The tech stack for this use case is:
+	• OpenAI’s gpt-3.5 model (follow my earlier article to run this app with open source Llama 2 model)
+	• LangChain framework
+	• Flask
+	• Python programming Language
+	• Postman (for testing)
+Server Side Code
+The code is available here in my repository.
+The server side logic is split into three parts:
+	• Instantiate OpenAI’s gpt-turbo-3.5 model
+	• Load the data from the local PDF file (which is our insurance document)
+	• Split the document into multiple chunks of 1000 characters each
+	• Vectorise the chunks to a Chroma DB
+	• Create a LangChain’s “RetrievalQA” chain to compose the LLM, vector db and the user’s question as a prompt
+
+Language models like LLMs are extensively pre-trained on vast amounts of public information, enabling them to perform various NLP tasks such as text classification, summarisation, question answering, and even chatbot development, etc. While these models possess immense knowledge about a wide range of topics worldwide and exhibit exceptional reasoning and mathematical abilities, a critical question arises: are they truly effective for specific use cases, such as developing a chatbot tailored to answer questions about a particular company (let’s say, XYZ)? It seems unlikely, as language models may lack training on company-specific data.
+Therefore, how can we make these models work with our own data? i.e, how could we augment LLMs with our own private data? To bridge this gap and customize LLMs for our specific needs, we delve into the concept of Retrieval-Augmented Generation (RAG). This blog will delve into RAG, with a particular focus on understanding and incorporating LlamaIndex to seamlessly incorporate our own private data, residing in diverse sources like Amazon S3, PDFs, SQL databases, Notion, APIs, raw files, and more, to enhance the capabilities of these language models and enhance the performance of language models in our domain.
+Teaching the model to recognize when it doesn’t know
+Paradigms for inserting knowledge into LLMs
+	1. Fine-tuning:
+Fine-tuning is a process that takes a model that has already been trained and then tunes or tweaks the model to make it perform a similar task. Therefore, instead of training a new network from scratch, we can re-use the existing one. So, we start the training on the new data but with the weights initialized to those of the initial network.
+Downsides
+	• High Computation
+	• Data preparation effort
+	• High Cost
+	• Need ML expertise
+2. In context learning:
+Putting context into the prompt.
+Less learning and more how do I find the best conditional variable or prompt engineering in order to make sure that when prompt send to LLM, it has all the context information and get the output we want. It works on the principle, given the context, and then answers the following question.
+Challenges
+	• How to retrieve the right context for the prompt?
+	• How do we deal with long context, as the context might be too long and could exceed the context window of LLM?
+	• How to deal with unstructured/semi structure/ structure data?
+	• How to deal with source data that is potentially very large
+3. Retrieval-Augmented Generation (RAG):
+Retrieval-Augmented Generation (RAG) involves enhancing the performance of a large language model by making it refer to a reliable knowledge base beyond its initial training data sources before generating a response. Large Language Models (LLMs) undergo training on extensive datasets and leverage billions of parameters to generate unique content for tasks such as answering questions, language translation, and sentence completion. RAG takes the powerful capabilities of LLMs a step further by tailoring them to specific domains or an organization’s internal knowledge base, all without requiring the model to undergo retraining. This cost-effective approach ensures that the output of LLMs remains relevant, accurate, and valuable in diverse contexts.
+RAG resolves all the downsides and challenges of previous approaches. Let’s see how RAG overcame all the downsides and challenges of previous approaches by understanding how the RAG works
+How Does Retrieval-Augmented Generation Work?
+Without RAG, the LLM takes the user input and creates a response based on the information it was trained on — or what it already knows. With RAG, an information retrieval component is introduced that utilizes the user input to first pull information from a new data source. The user query and the relevant information are both given to the LLM. The LLM uses the new knowledge and its training data to create better responses. The following sections provide an overview of the process.
+Create external data and store it in a vector database
+The new data outside of the LLM’s original training data set is called external data. It can come from multiple data sources, such as APIs, databases, or document repositories. The data may exist in various formats like files, database records, or long-form text. Another AI technique, called embedding language models, converts data into numerical representations and stores it in a vector database. This process creates a knowledge library that the LLM can understand.
+Retrieve relevant information
+The next step is to perform a relevancy search. The user query is converted to a vector representation called embedding and matched with the vector databases. For example, consider a smart chatbot that can answer human resource questions for an organization. If an employee searches, “How much annual leave do I have?” the system will retrieve annual leave policy documents alongside the individual employee’s past leave record. These specific documents will be returned because they are highly-relevant to what the employee has input. The relevancy was calculated and established using mathematical vector calculations and representations called semantic search.
+Augment the LLM prompt
+Next, the RAG model augments the user input (or prompts) by adding the relevant retrieved data in context (query + context). This step uses prompt engineering techniques to communicate effectively with the LLM. The augmented prompt allows the large language models to generate an accurate answer to user queries.
+
+
+What is Retrieval-Augmented Generation (RAG)?
+Retrieval-Augmented Generation (RAG) is an innovative approach that merges retrieval-based and generation-based models for Natural Language Processing (NLP). RAG uses a retriever model to identify and rank relevant document segments and a generator model to produce detailed, contextually relevant responses.
+What are Embeddings?
+Embeddings are numerical vector representations of text, generated through models like Large Language Models (LLMs). These vectors serve as a foundation for various NLP tasks, including information retrieval.
+Business Use Case
+Imagine an organization with a large number of private documents stored in various formats and locations, like Confluence pages, PDFs, or internal databases. The objective is to create a chatbot that can understand user queries and retrieve accurate, synthesized information from this vast repository.
+
+Data Preparation
+Confluence pages are broken down into smaller parts. Confluence APIs are used to pull data for processing. Given the nature of Confluence documents, which often contain various sections, paragraphs, and even tables, breaking them down into smaller parts is crucial. We can use parsing algorithms to segregate the content into individual sections, paragraphs, or sentences based on the level of granularity required.
+Integrating RAG and Embeddings
+The magic happens when we combine RAG with embeddings for our search:
+	1. Embedding Generation: The LLM first generates embeddings for each segment of the Confluence pages.
+	2. Storing Embeddings: These embeddings are then stored in a secure, searchable vector database.
+	3. Retrieval Model: When a user query arrives, the retriever model in RAG searches the vector database for the most semantically related embeddings.
+	4. Generation Model: Once relevant segments are identified and ranked by the retriever model, the generator model takes over. It uses these segments to create a contextually accurate, synthesized answer to the user’s query.
+
+Step 1 and 2
+With the use of Open source LLM ( LLAMA 2 or FALCON) we create embeddings for each segmented part of the Confluence pages. These embeddings serve as condensed, numerical representations of the text that capture its semantic essence. Once generated, these embeddings are securely stored in a vector database that is designed for fast and efficient similarity searches. The system retrieves these “candidates” but doesn’t yet show them to the user.
+Step 3: Augmentation and Ranking
+The retrieved candidates are not directly shown to the user. Instead, they are used as context for generating a more coherent and comprehensive answer. RAG takes these candidates and the original query, and ranks them based on how well they answer the query, using them to generate a well-structured, informative response.
+Step 4: Generation of Contextual Response
+Finally, the system uses the top-ranked candidates to generate a final response. Because it’s making use of both retrieved information and generative capabilities, the answer is likely to be both accurate and well-contextualized.
+Conclusion
+By leveraging the strengths of both RAG and embeddings, we can build a powerful, efficient, and accurate search functionality for Confluence platforms. This approach is not only confined to large organizations but can benefit any setup where quick and precise document retrieval is essential.
+
+
+What are Word Embeddings?
+Word embeddings are vector representations of words that capture their meaning and semantic context. Unlike tokens, which are simple conversions of words into sets of tokens, embeddings preserve the context and semantic meaning of sentences. We will explore a popular embedding model called Mini LM L6 V2, which encodes sentences and represents them in a multi-dimensional graph.
+The Vector Database: Chroma
+Chroma is a vector database that stores embeddings and performs semantic searches. It allows us to perform similarity searches and retrieve embeddings and their associated metadata. In this article, we will use Chroma to store embeddings generated from sentences and query the database to retrieve embeddings that match a specific context.
+Implementing Semantic Search
+Semantic search is a technique that involves calculating the distance between two vectors in a multi-dimensional space. In our case, we will use dot product to determine the similarity between embeddings. The closer the vectors, the more similar their meaning and context. We will demonstrate how to perform semantic searches using Chroma and retrieve embeddings that are related to a given query.
+Generating Embeddings with Chroma
+To generate embeddings, we will import the necessary libraries such as NumPy and Sentence Transformers. We will define a function that takes a sentence or phrase as input and encodes it into an embedding using the Mini LM L6 V2 model. We will demonstrate the process by generating embeddings for different phrases and examining their lengths and similarity.
+Retrieving Context with Chroma
+In order to perform contextual searches and retrieve embeddings, we need to store the embeddings in a vector database. Chroma provides the functionality to store embeddings along with their associated metadata. We will create a Python list with phrases and metadata, and then populate the Chroma collection with the embeddings and metadata.
+An Example: Building a Q&A System
+In this example, we will use the Oscars dataset to build a question-answering system. We will convert the structured dataset into text by concatenating the columns, and then store the text and embeddings in Chroma. We will demonstrate how to perform searches within Chroma to retrieve Relevant information based on user queries.
+The Framework for Retrieval Augmented Generation (RAG)
+Retrieval augmented generation (RAG) is a framework that combines retrieval and generation techniques to enhance the accuracy and context of responses from Large Language Models. It involves augmenting the prompt by pulling data from various sources and injecting it into the context. We will discuss the components of the RAG framework and how it can be used to build domain-specific language models.
+Bringing It All Together: Building an End-to-End Q&A Application
+In this final demo, we will connect all the components discussed earlier to build an end-to-end question-answering application. We will initialize Chroma and populate it with the Oscars dataset. Then, we will initialize LAMA-2 and prompt it with user queries. The application will retrieve context from Chroma, augment the prompt, and generate responses using LAMA-2.
+The Power of Prompt Engineering: Enhancing LAMA-2 with Context
+Prompt engineering plays a crucial role in the accuracy and relevance of responses from language models. By constructing the prompt with the right system and user prompts, and following a specific template, we can provide enough context to the language model to generate accurate responses. We will discuss the importance of prompt engineering and how it enhances the performance of LAMA-2.
+Conclusion
+In this article, we explored the implementation of retrieval augmented generation using word embeddings and Chroma. We learned about word embeddings, the Chroma vector database, semantic search, and how to generate and retrieve embeddings. We also built an end-to-end question-answering application using the RAG framework and demonstrated the power of prompt engineering in enhancing language model responses.
+
+
+
+
