@@ -1,89 +1,32 @@
-import os
-import re
-from slack_sdk import WebClient
-from slack_sdk.errors import SlackApiError
-from chromadb import PersistentClient
-from langchain.prompts import PromptTemplate
-from sentence_transformers import SentenceTransformer
+import json
 
-# Sample Slack data
-sample_messages = [
-    {"text": "How do I set up a meeting? You can use Google Calendar to set up a meeting."},
-    {"text": "What's the Wi-Fi password? The Wi-Fi password is 'password123'."},
-    {"text": "How can I access the company VPN? You need to download the VPN client and use your company credentials."},
-    {"text": "Where is the office located? The office is located at 123 Main St."},
-    {"text": "How do I request time off? Use the HR portal to request time off."},
-    {"text": "What's the procedure for expense reimbursement? Submit your receipts through the expense management system."},
-    {"text": "How do I reset my password? Use the password reset tool on the IT portal."},
-    {"text": "Can I work from home? Check the company's remote work policy in the employee handbook."}
-]
+# Function to convert JSON data to Markdown formatted string
+def json_to_md(json_data, indent=0):
+    md_string = ""
+    indent_str = '    ' * indent
+    if isinstance(json_data, dict):
+        for key, value in json_data.items():
+            md_string += f"{indent_str}- **{key}**:\n"
+            md_string += json_to_md(value, indent + 1)
+    elif isinstance(json_data, list):
+        for item in json_data:
+            md_string += f"{indent_str}- \n"
+            md_string += json_to_md(item, indent + 1)
+    else:
+        md_string += f"{indent_str}- {json_data}\n"
+    return md_string
 
-# Preprocess Slack data
-def preprocess_message(message):
-    text = message.get('text', '')
-    text = re.sub(r'<[^>]*>', '', text)  # Remove any potential Slack mentions and links
-    text = text.strip()
-    return text
+# Step 1: Read the JSON file
+source_json_file = 'data.json'
+with open(source_json_file, 'r') as json_file:
+    json_data = json.load(json_file)
 
-def preprocess_messages(messages):
-    return [preprocess_message(msg) for msg in messages if preprocess_message(msg)]
+# Step 2: Convert JSON data to Markdown string
+markdown_string = json_to_md(json_data)
 
-preprocessed_messages = preprocess_messages(sample_messages)
+# Step 3: Write to a .md file
+destination_md_file = 'data.md'
+with open(destination_md_file, 'w') as md_file:
+    md_file.write(markdown_string)
 
-# Convert messages to embeddings using a transformer model
-model = SentenceTransformer('all-MiniLM-L6-v2')
-embeddings = model.encode(preprocessed_messages).tolist()
-
-# ChromaDB settings and PersistentClient setup
-persist_location = "/path/to/your/persistent/storage"
-settings_set = {
-    # Add any specific settings you need for ChromaDB
-}
-
-client = PersistentClient(path=persist_location, settings=settings_set)
-
-def index_messages(embeddings, messages, collection_name):
-    collection = client.get_or_create_collection(name=collection_name)
-    collection.add(documents=messages, embeddings=embeddings, ids=[str(i) for i in range(len(messages))])
-    return collection
-
-collection_name = 'sample_slack_messages'
-collection = index_messages(embeddings, preprocessed_messages, collection_name)
-
-# Configure the PromptTemplate
-prompt_template = PromptTemplate(
-    input_variables=["query", "documents"],
-    template="Given the following Slack messages: {documents}, provide a concise and accurate answer to the query: {query}"
-)
-
-# Q&A System class
-class QnASystem:
-    def __init__(self, collection, client, prompt_template):
-        self.collection = collection
-        self.client = client
-        self.prompt_template = prompt_template
-
-    def retrieve_documents(self, query, top_k=5):
-        query_embedding = model.encode([query]).tolist()[0]
-        results = self.collection.query(query_embeddings=[query_embedding], n_results=top_k)
-        return [res['document'] for res in results['results']]
-
-    def generate_answer(self, query, documents):
-        prompt = self.prompt_template.format(query=query, documents="\n".join(documents))
-        response = self.client.generate(prompt, model="llama-3-b70", max_new_tokens=100)
-        return response['text']
-
-    def answer_query(self, query):
-        documents = self.retrieve_documents(query)
-        answer = self.generate_answer(query, documents)
-        return answer
-
-# Initialize QnA System
-# Assuming you have an internally set up client for generating responses
-internal_client = ...  # Replace with your internal client setup
-qna_system = QnASystem(collection, internal_client, prompt_template)
-
-# Answer a sample query
-query = "How do I set up a meeting?"
-answer = qna_system.answer_query(query)
-print("Answer:", answer)
+print(f"JSON data has been written to {destination_md_file}")
