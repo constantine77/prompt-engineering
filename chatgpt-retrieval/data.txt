@@ -39,9 +39,8 @@ settings_set = {
 client = PersistentClient(path=persist_location, settings=settings_set)
 
 def index_messages(messages, collection_name):
-    collection = client.create_collection(collection_name)
-    for i, message in enumerate(messages):
-        collection.insert(document=message, document_id=str(i))
+    collection = client.get_or_create_collection(name=collection_name)
+    collection.add(documents=messages, ids=[str(i) for i in range(len(messages))])
     return collection
 
 collection_name = 'sample_slack_messages'
@@ -63,8 +62,8 @@ class QnASystem:
         self.prompt_template = prompt_template
 
     def retrieve_documents(self, query, top_k=5):
-        results = self.collection.search(query, top_k=top_k)
-        return [res['document'] for res in results]
+        results = self.collection.query(query_text=query, n_results=top_k)
+        return [res['document'] for res in results['results']]
 
     def generate_answer(self, query, documents):
         prompt = self.prompt_template.format(query=query, documents="\n".join(documents))
