@@ -1,0 +1,80 @@
+import os
+import re
+from slack_sdk import WebClient
+from slack_sdk.errors import SlackApiError
+from chromadb.client import ChromaClient
+from langchain.llm import Llama3
+from langchain.prompts import PromptTemplate
+
+# Sample Slack data
+sample_messages = [
+    {"text": "How do I set up a meeting? You can use Google Calendar to set up a meeting."},
+    {"text": "What's the Wi-Fi password? The Wi-Fi password is 'password123'."},
+    {"text": "How can I access the company VPN? You need to download the VPN client and use your company credentials."},
+    {"text": "Where is the office located? The office is located at 123 Main St."},
+    {"text": "How do I request time off? Use the HR portal to request time off."},
+    {"text": "What's the procedure for expense reimbursement? Submit your receipts through the expense management system."},
+    {"text": "How do I reset my password? Use the password reset tool on the IT portal."},
+    {"text": "Can I work from home? Check the company's remote work policy in the employee handbook."}
+]
+
+# Preprocess Slack data
+def preprocess_message(message):
+    text = message.get('text', '')
+    text = re.sub(r'<[^>]*>', '', text)  # Remove any potential Slack mentions and links
+    text = text.strip()
+    return text
+
+def preprocess_messages(messages):
+    return [preprocess_message(msg) for msg in messages if preprocess_message(msg)]
+
+preprocessed_messages = preprocess_messages(sample_messages)
+
+# Index messages with ChromaDB
+client = ChromaClient(api_key=os.environ['CHROMA_API_KEY'])
+
+def index_messages(messages, collection_name):
+    collection = client.create_collection(collection_name)
+    for i, message in enumerate(messages):
+        collection.insert(document=message, document_id=str(i))
+    return collection
+
+collection_name = 'sample_slack_messages'
+collection = index_messages(preprocessed_messages, collection_name)
+
+# Configure LangChain with LLAMA3
+llm = Llama3(api_key=os.environ['LLAMA3_API_KEY'])
+
+prompt_template = PromptTemplate(
+    input_variables=["query", "documents"],
+    template="Given the following Slack messages: {documents}, provide a concise and accurate answer to the query: {query}"
+)
+
+# Q&A System class
+class QnASystem:
+    def __init__(self, collection, llm, prompt_template):
+        self.collection = collection
+        self.llm = llm
+        self.prompt_template = prompt_template
+
+    def retrieve_documents(self, query, top_k=5):
+        results = self.collection.search(query, top_k=top_k)
+        return [res['document'] for res in results]
+
+    def generate_answer(self, query, documents):
+        prompt = self.prompt_template.format(query=query, documents="\n".join(documents))
+        response = self.llm.generate(prompt)
+        return response['text']
+
+    def answer_query(self, query):
+        documents = self.retrieve_documents(query)
+        answer = self.generate_answer(query, documents)
+        return answer
+
+# Initialize QnA System
+qna_system = QnASystem(collection, llm, prompt_template)
+
+# Answer a sample query
+query = "How do I set up a meeting?"
+answer = qna_system.answer_query(query)
+print("Answer:", answer)
