@@ -2,7 +2,7 @@ import os
 import re
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
-from chromadb.client import ChromaClient
+from chromadb.client import PersistentClient
 from langchain.llm import Llama3
 from langchain.prompts import PromptTemplate
 
@@ -30,8 +30,13 @@ def preprocess_messages(messages):
 
 preprocessed_messages = preprocess_messages(sample_messages)
 
-# Index messages with ChromaDB
-client = ChromaClient(api_key=os.environ['CHROMA_API_KEY'])
+# ChromaDB settings and PersistentClient setup
+persist_location = "/path/to/your/persistent/storage"
+settings_set = {
+    # Add any specific settings you need for ChromaDB
+}
+
+client = PersistentClient(path=persist_location, settings=settings_set)
 
 def index_messages(messages, collection_name):
     collection = client.create_collection(collection_name)
