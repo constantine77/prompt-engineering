@@ -2,7 +2,7 @@ import os
 import re
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
-from chromadb.client import PersistentClient
+from chromadb import PersistentClient
 from langchain.llm import Llama3
 from langchain.prompts import PromptTemplate
 
