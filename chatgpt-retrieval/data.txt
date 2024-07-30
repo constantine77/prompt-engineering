@@ -4,7 +4,7 @@ from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from chromadb import PersistentClient
 from langchain.prompts import PromptTemplate
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sentence_transformers import SentenceTransformer
 
 # Sample Slack data
 sample_messages = [
@@ -30,9 +30,9 @@ def preprocess_messages(messages):
 
 preprocessed_messages = preprocess_messages(sample_messages)
 
-# Convert messages to embeddings
-vectorizer = TfidfVectorizer()
-embeddings = vectorizer.fit_transform(preprocessed_messages).toarray().tolist()
+# Convert messages to embeddings using a transformer model
+model = SentenceTransformer('all-MiniLM-L6-v2')
+embeddings = model.encode(preprocessed_messages).tolist()
 
 # ChromaDB settings and PersistentClient setup
 persist_location = "/path/to/your/persistent/storage"
@@ -64,7 +64,7 @@ class QnASystem:
         self.prompt_template = prompt_template
 
     def retrieve_documents(self, query, top_k=5):
-        query_embedding = vectorizer.transform([query]).toarray().tolist()[0]
+        query_embedding = model.encode([query]).tolist()[0]
         results = self.collection.query(query_embeddings=[query_embedding], n_results=top_k)
         return [res['document'] for res in results['results']]
 
