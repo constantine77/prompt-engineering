@@ -4,6 +4,7 @@ from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
 from chromadb import PersistentClient
 from langchain.prompts import PromptTemplate
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Sample Slack data
 sample_messages = [
@@ -29,6 +30,10 @@ def preprocess_messages(messages):
 
 preprocessed_messages = preprocess_messages(sample_messages)
 
+# Convert messages to embeddings
+vectorizer = TfidfVectorizer()
+embeddings = vectorizer.fit_transform(preprocessed_messages).toarray().tolist()
+
 # ChromaDB settings and PersistentClient setup
 persist_location = "/path/to/your/persistent/storage"
 settings_set = {
@@ -37,13 +42,13 @@ settings_set = {
 
 client = PersistentClient(path=persist_location, settings=settings_set)
 
-def index_messages(messages, collection_name):
+def index_messages(embeddings, messages, collection_name):
     collection = client.get_or_create_collection(name=collection_name)
-    collection.add(documents=messages, ids=[str(i) for i in range(len(messages))])
+    collection.add(documents=messages, embeddings=embeddings, ids=[str(i) for i in range(len(messages))])
     return collection
 
 collection_name = 'sample_slack_messages'
-collection = index_messages(preprocessed_messages, collection_name)
+collection = index_messages(embeddings, preprocessed_messages, collection_name)
 
 # Configure the PromptTemplate
 prompt_template = PromptTemplate(
@@ -59,7 +64,8 @@ class QnASystem:
         self.prompt_template = prompt_template
 
     def retrieve_documents(self, query, top_k=5):
-        results = self.collection.query(query_text=query, n_results=top_k)
+        query_embedding = vectorizer.transform([query]).toarray().tolist()[0]
+        results = self.collection.query(query_embeddings=[query_embedding], n_results=top_k)
         return [res['document'] for res in results['results']]
 
     def generate_answer(self, query, documents):
